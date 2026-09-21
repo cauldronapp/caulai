@@ -1,0 +1,63 @@
+name: CAUL AI CI (Phase 1A)
+
+# NOTE: If enabling CI on the Cauldron-controlled private repo incurs any charge,
+# STOP and flag it before enabling (per handoff §9). This workflow assumes $0.
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: caul_local_dev_pw
+          POSTGRES_DB: caul_dev
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      APP_ENV: dev
+      JWT_SECRET: ci_secret_not_a_real_key
+      DEV_DATABASE_URL: postgresql+psycopg://postgres:caul_local_dev_pw@localhost:5432/caul_dev
+      DEV_ADMIN_DATABASE_URL: postgresql+psycopg://postgres:caul_local_dev_pw@localhost:5432/caul_dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install
+        run: |
+          cd backend
+          pip install -r requirements.txt
+      - name: Lint (flake8)
+        run: cd backend && flake8 app --max-line-length=120 --extend-ignore=E203,W503 || true
+      - name: Migrations
+        run: cd backend && python -m alembic upgrade head && python -m scripts.apply_grants
+      - name: Route-permission coverage (CI-enforced default-deny)
+        run: cd backend && python -m pytest tests/test_route_coverage.py -q
+      - name: Unit / integration / audit / adversarial tests
+        run: cd backend && python -m pytest tests/ -q
+      - name: SAST (bandit)
+        run: cd backend && pip install bandit && bandit -r app -ll || true
+      - name: Dependency scan (pip-audit)
+        run: cd backend && pip install pip-audit && pip-audit || true
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Install
+        run: cd frontend && yarn install --frozen-lockfile
+      - name: Lint
+        run: cd frontend && yarn eslint src --max-warnings 0 || true
+      - name: Build
+        run: cd frontend && yarn build

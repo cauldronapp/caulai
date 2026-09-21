@@ -1,0 +1,111 @@
+{
+  "project_name": "CAUL AI — Cauldron Growth OS Command Center (Phase 1A)",
+  "owner": "Cauldron Technologies, Inc.",
+  "app_type": "dashboard",
+  "archetype": "THE PERFORMANCE PRO / TACTICAL COMMAND CENTER",
+  "theme": "dark",
+  "version": "Phase 1A Foundation",
+  "instructions_to_main_agent": [
+    "Build a serious, high-contrast tactical security & compliance governance command center for executive, admin, and compliance officers.",
+    "MUST display a prominent, sticky global warning banner: 'AUTH STUB — NOT PRODUCTION' at the very top of all screens.",
+    "MUST implement 4 foundation pages for Phase 1A: 1) Labeled Dev Auth Stub Login, 2) Governance Dashboard, 3) AI Recommendations & Approvals (List + Detail view), 4) Tamper-Evident Hash-Chained Audit Log (Read-only, searchable, filterable, exportable).",
+    "MUST provide navigation items for secondary system pages: Emergency Controls, Connectors (all Not Connected), Policies, Admin Users & Roles, and Settings ($24.99/mo subscription, 2.30% fee).",
+    "MUST support full state machine handling across all UI views: empty, loading, error, disconnected, pending, approved, rejected, failed, paused, and demo/stub states.",
+    "All interactive elements and key compliance metrics MUST include kebab-case data-testid attributes for automated testing.",
+    "Use React with Tailwind CSS and Shadcn/ui components customized with dark slate tactical panels and monospaced cryptographic digest displays."
+  ],
+  "typography": {
+    "heading_font": "Manrope, sans-serif",
+    "body_font": "Inter, sans-serif",
+    "mono_font": "JetBrains Mono, Monaco, monospace",
+    "forbidden_fonts": ["Space Grotesk"],
+    "scale": {
+      "hero_title": "text-4xl sm:text-5xl font-extrabold tracking-tight",
+      "section_header": "text-2xl sm:text-3xl font-bold tracking-tight text-slate-100",
+      "card_title": "text-lg font-semibold text-slate-200 tracking-normal",
+      "body_text": "text-sm font-normal text-slate-300 leading-relaxed",
+      "caption_text": "text-xs font-medium text-slate-400 tracking-wider uppercase",
+      "code_digest": "font-mono text-xs text-emerald-400 bg-slate-950 px-2 py-1 rounded border border-slate-800"
+    }
+  },
+  "colors": {
+    "background_primary": "#0A0D14",
+    "background_secondary": "#111622",
+    "card_background": "#161C2E",
+    "card_border": "#262F45",
+    "text_primary": "#F1F5F9",
+    "text_secondary": "#94A3B8",
+    "text_muted": "#64748B",
+    "accent_primary": "#6366F1",
+    "accent_primary_hover": "#4F46E5",
+    "status_verified_green": "#10B981",
+    "status_pending_amber": "#F59E0B",
+    "status_alert_red": "#EF4444",
+    "status_paused_purple": "#A855F7",
+    "forbidden_colors": ["#1B93A4", "#7351B7"]
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-md bg-slate-900/80 border border-slate-800/80",
+    "tracing_beam": "shadow-[0_0_15px_rgba(99,102,241,0.15)] border border-indigo-500/30",
+    "cryptographic_badge": "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-mono text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/50",
+    "stub_warning_banner": "bg-amber-500/10 border-b border-amber-500/30 text-amber-300 px-4 py-2 text-xs font-mono flex items-center justify-between"
+  },
+  "component_path": {
+    "ui_components": "/app/frontend/src/components/ui",
+    "custom_views": "/app/frontend/src/views"
+  },
+  "grids": {
+    "dashboard_bento": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6",
+    "approvals_layout": "grid grid-cols-1 lg:grid-cols-12 gap-6 p-6",
+    "audit_log_layout": "flex flex-col gap-4 p-6"
+  },
+  "layouts": {
+    "sidebar": "w-64 bg-slate-950 border-r border-slate-800 min-h-screen flex flex-col justify-between p-4",
+    "top_navbar": "h-14 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-6 z-40 sticky top-0"
+  },
+  "motion": {
+    "micro_interactions": "transition-all duration-150 ease-in-out",
+    "hover_lift": "hover:-translate-y-0.5 hover:shadow-lg transition-transform",
+    "fade_in": "animate-in fade-in duration-200"
+  },
+  "accessibility": {
+    "wcag_level": "WCAG 2.1 AA",
+    "min_contrast_ratio": "4.5:1 for standard text, 3:1 for large headers",
+    "focus_states": "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+  },
+  "media": {
+    "hero_background": "https://images.pexels.com/photos/17489160/pexels-photo-17489160.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "server_rack_dark": "https://images.pexels.com/photos/37730212/pexels-photo-37730212.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+  },
+  "image_urls": [
+    {
+      "category": "infrastructure",
+      "description": "Illuminated server racks for enterprise infrastructure representation",
+      "url": "https://images.pexels.com/photos/17489160/pexels-photo-17489160.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    },
+    {
+      "category": "security_monitoring",
+      "description": "Dark mode server rack details for governance dashboard visuals",
+      "url": "https://images.pexels.com/photos/37730212/pexels-photo-37730212.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    }
+  ],
+  "states_requirements": {
+    "empty": "Render tailored empty-state panels with diagnostic clear-filter buttons and governance explanatory notes.",
+    "loading": "Use dark translucent Skeleton loaders matching component structural dimensions.",
+    "error": "Display red-tinted alert boxes with error codes, timestamp, and hash-retry triggers.",
+    "disconnected": "Show amber/red status badges for disconnected connectors with re-authentication prompts.",
+    "pending": "Amber pill badges with pulse animations indicating required executive authorization.",
+    "approved": "Emerald green badges with hash signature verification timestamp.",
+    "rejected": "Slate dark red badges with recorded rejection reason & auditor identity.",
+    "failed": "Bright crimson error badges with stack digest preview.",
+    "paused": "Purple warning banners and lock indicators when Emergency Global Pause is engaged.",
+    "demo_stub": "Visible 'STUB USER' pill next to active user profile with quick role switcher."
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Always set explicit hover text colors to prevent invisible text (e.g., hover:bg-slate-800 hover:text-white).",
+    "Ensure every interactive element (button, select, table row, input, tab, filter, modal) has a valid data-testid attribute.",
+    "Never use generic centered layouts or plain light backgrounds for this enterprise app.",
+    "Ensure cryptographic hashes use monospaced fonts with copy-to-clipboard functionality.",
+    "Audit log table must clearly show chain-verification status (e.g. Genesis Hash, Chain Verified, Broken Link Alert)."
+  ]
+}

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+build/
+.eslintcache
+
+# PostgreSQL local cluster data (persisted at /app/postgres_data; never commit DB data)
+postgres_data/
+backups/
+
+# OS
+.DS_Store
+
+# Test artifacts
+.pytest_cache/
+test_reports/
