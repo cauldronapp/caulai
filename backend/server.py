@@ -13,7 +13,10 @@ from sqlalchemy.orm import Session
 
 from app.config import get_app_env, get_chain_env, get_chain_org
 from app.database import get_db, engine
-from app.routers import auth, dashboard, recommendations, approvals, audit, emergency, admin, system
+from app.routers import (
+    auth, dashboard, recommendations, approvals, audit, emergency, admin, system,
+    notifications, admin_manage,
+)
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -46,7 +49,7 @@ def health(db: Session = Depends(get_db)):
             "chain_env": get_chain_env(), "chain_org": get_chain_org()}
 
 
-for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, system):
+for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, admin_manage, system, notifications):
     app.include_router(r.router)
 
 

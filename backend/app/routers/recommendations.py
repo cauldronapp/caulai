@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Recommendation, User
+from ..models import Recommendation, User, ExecutionQueueItem
 from ..deps import require_permission
 from ..schemas import RecommendationCreate
 from ..canonical import payload_digest
@@ -81,3 +81,31 @@ def update_payload(rec_id: str, body: dict, db: Session = Depends(get_db),
     db.commit()
     db.refresh(rec)
     return _serialize(rec)
+
+
+@router.post("/{rec_id}/enqueue")
+def enqueue_execution(rec_id: str, db: Session = Depends(get_db),
+                      user: User = Depends(require_permission("recommendation:execute"))):
+    """Enqueue an approved recommendation for STUB execution. Respects pause + approval gate.
+    NEVER calls a live connector in Phase 1A."""
+    rec = db.get(Recommendation, rec_id)
+    if rec is None:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    ok, reason = approvals.can_execute(db, rec)
+    if not ok:
+        raise HTTPException(status_code=409, detail={"code": "not_executable", "reason": reason})
+    item = ExecutionQueueItem(
+        recommendation_id=rec.id, connector=None, status="queued",
+        irreversible=rec.irreversible, rollback_eligible=not rec.irreversible,
+        enqueued_by=user.id, result={"stub": True},
+    )
+    db.add(item)
+    rec.status = "executed"  # stub: queued for execution
+    audit.append_event(db, actor_id=user.id, actor_label=user.display_name,
+                       action="recommendation.enqueued", resource_type="execution_queue",
+                       resource_id=rec.id,
+                       payload={"irreversible": rec.irreversible, "stub": True})
+    db.commit()
+    db.refresh(item)
+    return {"queued": True, "item_id": item.id, "irreversible": item.irreversible,
+            "rollback_eligible": item.rollback_eligible, "stub_note": "No live connector executed."}

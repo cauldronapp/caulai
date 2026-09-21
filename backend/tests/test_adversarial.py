@@ -126,7 +126,7 @@ def test_no_execution_under_active_pause(db, make_user):
     db.commit()
     ok, reason = approvals.can_execute(db, rec)
     assert ok is False and reason.startswith("paused")
-    # cleanup
-    for p in db.query(PauseState).filter_by(active=True).all():
-        p.active = False
+    # cleanup: remove the pause rows this test created to avoid accumulation
+    for p in db.query(PauseState).filter_by(scope="global", target="*").all():
+        db.delete(p)
     db.commit()

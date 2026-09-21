@@ -45,6 +45,17 @@ def list_connectors(db: Session = Depends(get_db),
              "credential_fields": []} for c in rows]
 
 
+@router.post("/connectors/contract-test")
+def run_connector_contract(user: User = Depends(require_permission("connector:test"))):
+    """Run the connector contract-test suite against the reference StubConnector.
+    Every future connector must pass all checks before activation."""
+    from ..connectors.base import run_contract_suite, StubConnector
+    results = run_contract_suite(StubConnector)
+    return {"connector": "stub", "all_passed": all(r["passed"] for r in results),
+            "checks": results,
+            "note": "Contract suite; no live connector executed. All connectors remain Not Connected."}
+
+
 @router.get("/policies")
 def list_policies(db: Session = Depends(get_db),
                   user: User = Depends(require_permission("policy:list"))):

@@ -28,6 +28,7 @@ PERMISSION_CATALOG: dict[str, str] = {
     "recommendation:read": "Read a recommendation",
     "recommendation:create": "Create a recommendation",
     "recommendation:update": "Update a recommendation payload",
+    "recommendation:execute": "Enqueue an approved recommendation for (stub) execution",
     # approvals
     "approval:list": "List approvals",
     "approval:read": "Read an approval",
@@ -46,6 +47,7 @@ PERMISSION_CATALOG: dict[str, str] = {
     # connectors
     "connector:list": "List connectors",
     "connector:read": "Read a connector",
+    "connector:test": "Run the connector contract-test suite (stub)",
     # emergency
     "emergency:read": "View emergency controls",
     "emergency:pause": "Engage a pause",
@@ -65,6 +67,7 @@ PERMISSION_CATALOG: dict[str, str] = {
     # notifications
     "notification:list": "List notifications",
     "notification:read": "Read a notification",
+    "notification:update": "Mark notifications read",
 }
 
 # Permissions considered high-risk for approval safeguards (self-approval forbidden, quorum).
@@ -144,7 +147,16 @@ SERVICE_IDENTITY_FORBIDDEN = {
     "role:manage", "user:manage", "user:assign_role",
     "emergency:pause", "emergency:resume", "emergency:revoke",
     "setting:update", "policy:update",
+    "recommendation:execute",
 }
+
+# --- Foundation-continuation grants (new permissions added this milestone) ---
+for _r in ("Admin", "Marketing Manager", "Developer", "Security/Compliance", "Analyst", "Auditor"):
+    ROLE_PERMISSIONS[_r].add("notification:update")
+ROLE_PERMISSIONS["Admin"].update({"recommendation:execute", "connector:test"})
+ROLE_PERMISSIONS["Security/Compliance"].update({"connector:test"})
+ROLE_PERMISSIONS["Developer"].update({"connector:test"})
+# ExecOwner is set(ALL_PERMS) computed above and already includes the new permissions.
 
 
 def is_high_risk(permission: str) -> bool:

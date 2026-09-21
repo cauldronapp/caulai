@@ -100,6 +100,7 @@ class Recommendation(Base):
     payload_digest: Mapped[str] = mapped_column(String(64), index=True)
     status: Mapped[str] = mapped_column(String(32), default="pending", index=True)
     required_approvals: Mapped[int] = mapped_column(Integer, default=1)
+    irreversible: Mapped[bool] = mapped_column(Boolean, default=False)
     submitted_by: Mapped[str] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
@@ -234,4 +235,21 @@ class Policy(Base):
     rules: Mapped[dict] = mapped_column(JSONB, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class ExecutionQueueItem(Base):
+    """Stub execution queue. NEVER calls a live connector in Phase 1A."""
+    __tablename__ = "execution_queue"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    recommendation_id: Mapped[str] = mapped_column(ForeignKey("recommendations.id", ondelete="CASCADE"), index=True)
+    connector: Mapped[str | None] = mapped_column(String(96), nullable=True)
+    status: Mapped[str] = mapped_column(String(24), default="queued", index=True)
+    # queued|executing|executed|cancelled|drained|failed|rolled_back
+    irreversible: Mapped[bool] = mapped_column(Boolean, default=False)
+    rollback_eligible: Mapped[bool] = mapped_column(Boolean, default=False)
+    idempotency_key: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    result: Mapped[dict] = mapped_column(JSONB, default=dict)
+    enqueued_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    enqueued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
