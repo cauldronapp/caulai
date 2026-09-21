@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Terminal, ShieldAlert, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -24,7 +24,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (user) navigate("/dashboard");
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user, navigate]);
 
   const submit = async (e) => {
     e.preventDefault();
