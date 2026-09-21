@@ -81,7 +81,7 @@ class PermissionChecker:
                 db,
                 actor_id=user.id, actor_label=user.display_name,
                 action="authorization.denied", resource_type="route",
-                resource_id=request.url.path,
+                resource_id=request.url.path[:255],
                 payload={"required_permission": self.caul_permission,
                          "method": request.method, "roles": user_role_names(user)},
             )

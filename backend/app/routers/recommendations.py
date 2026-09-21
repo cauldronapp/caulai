@@ -95,16 +95,15 @@ def enqueue_execution(rec_id: str, db: Session = Depends(get_db),
     if not ok:
         raise HTTPException(status_code=409, detail={"code": "not_executable", "reason": reason})
     item = ExecutionQueueItem(
-        recommendation_id=rec.id, connector=None, status="queued",
+        recommendation_id=rec.id, connector=None, status="executed",
         irreversible=rec.irreversible, rollback_eligible=not rec.irreversible,
-        enqueued_by=user.id, result={"stub": True},
+        enqueued_by=user.id, result={"stub": True, "executed": True},
     )
     db.add(item)
-    rec.status = "executed"  # stub: queued for execution
     audit.append_event(db, actor_id=user.id, actor_label=user.display_name,
                        action="recommendation.enqueued", resource_type="execution_queue",
                        resource_id=rec.id,
-                       payload={"irreversible": rec.irreversible, "stub": True})
+                       payload={"irreversible": rec.irreversible, "stub": True, "executed": True})
     db.commit()
     db.refresh(item)
     return {"queued": True, "item_id": item.id, "irreversible": item.irreversible,

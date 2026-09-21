@@ -36,28 +36,31 @@ no service-identity approval, permanently_prohibited never approvable). 5. Tampe
 hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + seed prod guards.
 7. Emergency controls against stub paths. 8. All-states, AA, responsive Command Center. 9. $0 spend.
 
-## Implemented (2026-06 — Foundation milestone)
+## Implemented (2026-06)
+### Foundation milestone
 - PostgreSQL foundation + separate dev/staging DBs + least-privilege + audit INSERT-only (DB-level).
-- Initial schema + Alembic migration on both DBs; idempotent seed with production guards; 9 synthetic `*.invalid` stub identities.
+- Schema + migrations on both DBs; idempotent seed with production guards; 9 synthetic `*.invalid` stub identities.
 - Provider-neutral OIDC interface + StubIdentityProvider; JWT httpOnly sessions with server-side expiry/revocation.
-- Complete 34-permission RBAC matrix, default-deny, CI route-coverage test.
+- 34→37 permission RBAC matrix, default-deny, CI route-coverage test.
 - Recommendation + approval state machines with all hardened safeguards.
-- Tamper-evident hash-chained audit (canonical serialization, advisory-lock sequencing, transactional insert, verify, checkpoints).
-- Emergency pause/resume model + enforcement in execution gate.
-- Command Center: Login, Dashboard, Approvals (list+detail), Audit (search/verify/export); RBAC-filtered nav; gated placeholders for the rest.
-- Tests: 29 pytest + 9 live API + frontend flows all pass. Backup+restore proven. Docs (preflight, branching, audit runbook, backup/restore, completion report, auth_testing).
+- Tamper-evident hash-chained audit (canonical, advisory-lock sequencing, transactional insert, verify, checkpoints).
+- Login, Dashboard, Approvals (list+detail), Audit pages.
+### Continuation milestone (remaining Phase 1A)
+- Full Emergency controls: global+granular pause/resume, queue cancel/drain, emergency revoke, rollback with irreversible-action warnings (stub paths only).
+- Connector contract-test suite (8 checks) + StubConnector + endpoint + pytest.
+- Execution queue model + synchronous stub execution + rollback eligibility.
+- Remaining Command Center pages: Recommendations (list+create), Notifications, Policies, Emergency, Connectors, Admin Users, Admin Roles (permission matrix), Settings, MFA stub — all with states, RBAC-filtered nav.
+- Admin management endpoints (create/disable users, assign roles, upsert roles) with service-identity guard.
+- Fixed CRITICAL audit resource_id truncation (widened to 255); migrated to FastAPI lifespan.
+- Tests: 31 pytest + connector contract + 2 green frontend iterations. Backup+restore proven.
+- Full Phase 1A completion report: docs/PHASE_1A_COMPLETION_REPORT.md.
 
 ## Prioritized backlog
-### P0 (next milestone, needs Gate 2 approval)
-- Remaining Command Center pages with all states: Recommendations UI, Emergency controls UI (global/granular pause, queue cancel/drain, rollback + irreversible-action labeling), Connectors (Not Connected, no credential fields), Policies, Admin Users/Roles editors, Settings (versioned $24.99/mo + 2.30%), Notifications, MFA stub page.
-- Connector contract-test suite (pause, revocation, timeout, failure, audit, idempotent safe-retry).
-- Scheduled audit-chain verification + independent exported checkpoints.
-### P1
-- Accessibility automation (axe) in CI; formal AA report per page.
-- Emergency queue drain/rollback flag semantics against stub paths.
-### P2
-- Auth0 pre-connection dossier (Phase 1B, separate approval). No tenant in 1A.
-- True separate-server DB isolation proposal (deferred provisioning).
+### Deferred (separate written approval)
+- Auth0 pre-connection dossier + connection (Phase 1B). No tenant in 1A.
+- True separate-server DB isolation provisioning.
+- Scheduled audit-verification cron + off-box checkpoint export.
+- Formal per-page axe accessibility report attachment (CI job exists).
 
 ## Next tasks
-Await written Gate 2 approval, then build remaining Command Center pages + emergency controls + connector contract tests (per user's stated milestone-gating).
+Await FINAL Phase 1A acceptance. Do not begin Phase 1B (Auth0, staging infra, live connectors, external integrations) without separate written approval.

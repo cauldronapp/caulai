@@ -5,6 +5,7 @@ IdP connection, no live connectors, no external egress.
 """
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
@@ -22,8 +23,21 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("caul")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("CAUL AI starting in env=%s (AUTH STUB — NOT PRODUCTION)", get_app_env())
+    try:
+        from app.seed import run_seed
+        logger.info("Seed result: %s", run_seed())
+    except Exception as e:  # seed guard or DB not migrated yet
+        logger.warning("Seed skipped/failed: %s", e)
+    yield
+
+
 app = FastAPI(title="CAUL AI — Cauldron Growth OS Command Center (Phase 1A)",
-              description="AUTH STUB — NOT PRODUCTION. PostgreSQL system of record.")
+              description="AUTH STUB — NOT PRODUCTION. PostgreSQL system of record.",
+              lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,14 +65,3 @@ def health(db: Session = Depends(get_db)):
 
 for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, admin_manage, system, notifications):
     app.include_router(r.router)
-
-
-@app.on_event("startup")
-def on_startup():
-    logger.info("CAUL AI starting in env=%s (AUTH STUB — NOT PRODUCTION)", get_app_env())
-    try:
-        from app.seed import run_seed
-        result = run_seed()
-        logger.info("Seed result: %s", result)
-    except Exception as e:  # seed guard or DB not migrated yet
-        logger.warning("Seed skipped/failed: %s", e)

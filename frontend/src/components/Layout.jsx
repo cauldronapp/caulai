@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Lightbulb, CheckSquare, ScrollText, Bell, FileCog,
-  AlertOctagon, Plug, Users, Shield, Settings, LogOut, Terminal,
+  AlertOctagon, Plug, Users, Shield, Settings, LogOut, Terminal, KeyRound,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { StubBanner } from "@/components/StubBanner";
@@ -18,6 +18,7 @@ const NAV = [
   { to: "/admin/users", label: "Users", icon: Users, perm: "user:list", testid: "nav-users" },
   { to: "/admin/roles", label: "Roles", icon: Shield, perm: "role:list", testid: "nav-roles" },
   { to: "/settings", label: "Settings", icon: Settings, perm: "setting:read", testid: "nav-settings" },
+  { to: "/mfa", label: "MFA (stub)", icon: KeyRound, perm: "dashboard:read", testid: "nav-mfa" },
 ];
 
 export function Layout({ children }) {

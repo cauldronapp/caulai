@@ -155,7 +155,7 @@ class AuditEvent(Base):
     actor_label: Mapped[str] = mapped_column(String(255))
     action: Mapped[str] = mapped_column(String(96), index=True)
     resource_type: Mapped[str] = mapped_column(String(64), index=True)
-    resource_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    resource_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     payload: Mapped[dict] = mapped_column(JSONB, default=dict)
     canonical: Mapped[str] = mapped_column(Text)  # deterministic serialization that was hashed
     prev_hash: Mapped[str] = mapped_column(String(64))
