@@ -13,6 +13,7 @@ from ..config import get_session_ttl_minutes
 from ..auth_provider import identity_provider, STUB_LABEL
 from ..deps import get_current_user, user_permissions, user_role_names
 from ..schemas import LoginRequest, UserOut
+from ..ratelimit import limiter
 from .. import audit
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -33,11 +34,16 @@ def provider_info():
 
 
 @router.post("/login", response_model=UserOut)
-def login(body: LoginRequest, response: Response, db: Session = Depends(get_db)):
+def login(body: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db)):
     email = body.email.lower().strip()
+    ip = request.client.host if request.client else "unknown"
+    rl_key = f"login:{ip}:{email}"
+    if limiter.exceeded(rl_key, 10, 300):
+        raise HTTPException(status_code=429, detail="Too many failed login attempts; please wait and retry")
     user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
     if user is None or user.disabled or not verify_password(body.password, user.password_hash):
-        # Audit failed attempt.
+        limiter.add(rl_key)
+        # Audit failed attempt (never records the password).
         audit.append_event(db, actor_id=user.id if user else None,
                            actor_label=email, action="auth.login_failed",
                            resource_type="session", resource_id=None,

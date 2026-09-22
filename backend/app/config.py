@@ -52,6 +52,16 @@ def get_jwt_secret() -> str:
     return _require("JWT_SECRET")
 
 
+def get_cron_secret(env: str | None = None) -> str:
+    """Per-environment cron/webhook secret. dev and staging use DIFFERENT secrets.
+    Falls back to a shared WEBHOOK_CRON_SECRET only if the env-specific one is unset."""
+    env = env or get_app_env()
+    specific = os.environ.get(f"WEBHOOK_CRON_SECRET_{env.upper()}")
+    if specific:
+        return specific
+    return _require("WEBHOOK_CRON_SECRET")
+
+
 def get_session_ttl_minutes() -> int:
     return int(os.environ.get("SESSION_TTL_MINUTES", "30"))
 

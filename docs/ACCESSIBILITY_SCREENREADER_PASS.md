@@ -1,9 +1,13 @@
 # CAUL AI — Screen-Reader & Keyboard Accessibility Pass (WCAG 2.1 AA)
 
-**Method:** semantic/ARIA audit of the running app aligned to NVDA/VoiceOver behaviors +
-axe-core automated checks + keyboard-only walkthrough. Scope: login, navigation, dashboard,
-approvals (table + detail), audit history (table), emergency controls, forms, errors, focus
-management, keyboard-only operation, status announcements.
+**Method (IMPORTANT — honest scope):** this was an **automated + manual code/DOM accessibility
+inspection**, NOT a session driven by real assistive-technology hardware. axe-core 4.10.2
+(wcag2a+wcag2aa) in Chromium + manual review of semantics/ARIA/roles/labels/focus order + a
+keyboard-only walkthrough. **NVDA and VoiceOver were NOT operated.** A live NVDA
+(Windows/Firefox or Chrome) and VoiceOver (macOS/Safari) hardware pass is recommended as final
+due diligence before production and is explicitly out of scope for Phase 1A.
+
+Original scope covered:
 
 ## Results by area
 | Area | Screen-reader / keyboard result | Remediation |
