@@ -39,8 +39,8 @@ Global + granular pause/resume; execution-queue cancel + drain; emergency revoke
 ## 11. Backup & restore evidence
 `pg_dump` custom-format backup restored into a scratch DB and verified (row counts intact), then dropped. Procedure in `docs/BACKUP_RESTORE.md`.
 
-## 12. Accessibility results
-Dark high-contrast theme with AA-oriented contrast, visible focus rings, semantic labels, keyboard-activatable controls, responsive layouts (sidebar collapses <md). Automated axe job wired in CI. Manual/automated formal per-page axe report is the one remaining accessibility artifact to attach at final sign-off.
+## 12. Accessibility results (WCAG 2.1 AA — PASS)
+Automated axe-core 4.10.2 (wcag2a+wcag2aa) audit across login, dashboard, audit, approvals, emergency, admin/roles, settings, connectors, recommendations → **0 violations** after remediation (contrast tokens raised; pending/paused badges de-pulsed and lightened). Responsive verified at 390×844 (no horizontal overflow; sidebar collapses <md; mobile dashboard 0 violations). Full evidence: `docs/ACCESSIBILITY_REPORT.md`. Visible focus rings, semantic labels, keyboard-activatable controls throughout.
 
 ## 13. Security-scan results
 CI runs bandit (SAST) + pip-audit (dependency scan). DB least-privilege; secrets in `.env` only; no hardcoded external credentials; connectors expose no credential fields.
@@ -48,8 +48,8 @@ CI runs bandit (SAST) + pip-audit (dependency scan). DB least-privilege; secrets
 ## 14. Known defects, risks & limitations
 - **Deferred (separate approval):** true separate-**server** DB isolation; scheduled audit-verification cron; Auth0 pre-connection dossier (Phase 1B).
 - Stub is explicitly not production auth; no MFA.
-- Formal axe per-page report pending attachment (CI job exists).
 - Residual audit risk: DB-owner compromise (tamper-evident, not tamper-proof) — see runbook.
+- WCAG 2.1 AA: 0 automated axe violations across audited pages; manual screen-reader pass recommended as due diligence before production (Phase 1B).
 
 ## 15. Actual costs incurred
 **$0.** Local open-source PostgreSQL only. No accounts/subscriptions/credits/paid services.

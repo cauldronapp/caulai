@@ -2,18 +2,18 @@ import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 
 const STATUS_STYLES = {
-  pending: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  pending: "bg-amber-500/20 text-amber-200 border-amber-500/40",
   approved: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   auto_approved: "bg-emerald-500/10 text-emerald-300 border-emerald-500/25",
   rejected: "bg-rose-500/15 text-rose-300 border-rose-500/30",
   failed: "bg-red-600/20 text-red-300 border-red-500/40",
   prohibited: "bg-red-600/15 text-red-300 border-red-500/40",
   revoked: "bg-slate-500/15 text-slate-300 border-slate-500/30",
-  paused: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-  not_connected: "bg-slate-600/20 text-slate-400 border-slate-600/40",
+  paused: "bg-purple-500/20 text-purple-200 border-purple-500/40",
+  not_connected: "bg-slate-600/20 text-slate-300 border-slate-600/40",
   verified: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   broken: "bg-red-600/20 text-red-300 border-red-500/40",
-  default: "bg-slate-700/30 text-slate-300 border-slate-600/40",
+  default: "bg-slate-700/40 text-slate-200 border-slate-600/40",
 };
 
 export function StatusBadge({ status, label, testid }) {
@@ -22,9 +22,9 @@ export function StatusBadge({ status, label, testid }) {
   return (
     <span
       data-testid={testid}
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs ${cls} ${pulse}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs ${cls}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      <span className={`h-1.5 w-1.5 rounded-full bg-current ${pulse}`} />
       {label || status}
     </span>
   );
@@ -32,7 +32,7 @@ export function StatusBadge({ status, label, testid }) {
 
 export function Hash({ value, testid }) {
   const [copied, setCopied] = useState(false);
-  if (!value) return <span className="font-mono text-xs text-slate-600">—</span>;
+  if (!value) return <span className="font-mono text-xs text-slate-400">—</span>;
   const short = value.length > 20 ? `${value.slice(0, 10)}…${value.slice(-6)}` : value;
   const copy = () => {
     navigator.clipboard?.writeText(value);

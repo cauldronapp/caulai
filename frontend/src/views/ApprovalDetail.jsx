@@ -62,13 +62,13 @@ export default function ApprovalDetail() {
                   <StatusBadge testid="approval-detail-status" status={data.status} />
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-500">Risk</div><div className="mt-1 text-slate-200">{data.risk_level}</div></div>
-                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-500">Tier</div><div className="mt-1 text-slate-200">{data.tier}</div></div>
-                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-500">Distinct Approvals</div><div className="mt-1 text-slate-200">{data.distinct_approvals} / {data.required_approvals}</div></div>
-                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-500">Expires</div><div className="mt-1 text-slate-200">{new Date(data.expires_at).toLocaleString()}</div></div>
+                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-400">Risk</div><div className="mt-1 text-slate-200">{data.risk_level}</div></div>
+                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-400">Tier</div><div className="mt-1 text-slate-200">{data.tier}</div></div>
+                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-400">Distinct Approvals</div><div className="mt-1 text-slate-200">{data.distinct_approvals} / {data.required_approvals}</div></div>
+                  <div><div className="font-mono text-xs uppercase tracking-wider text-slate-400">Expires</div><div className="mt-1 text-slate-200">{new Date(data.expires_at).toLocaleString()}</div></div>
                 </div>
                 <div className="mt-4">
-                  <div className="font-mono text-xs uppercase tracking-wider text-slate-500">Bound Payload Digest</div>
+                  <div className="font-mono text-xs uppercase tracking-wider text-slate-400">Bound Payload Digest</div>
                   <div className="mt-1 flex items-center gap-2">
                     <Hash value={data.payload_digest} testid="approval-bound-digest" />
                     <span className={`font-mono text-xs ${data.payload_bound ? "text-emerald-400" : "text-rose-400"}`} data-testid="approval-binding-state">
@@ -81,14 +81,14 @@ export default function ApprovalDetail() {
               <Card testid="approval-decisions">
                 <h3 className="mb-3 font-heading text-lg font-semibold text-slate-200">Decision Ledger</h3>
                 {data.decisions.length === 0 ? (
-                  <p className="text-sm text-slate-500">No decisions recorded yet.</p>
+                  <p className="text-sm text-slate-400">No decisions recorded yet.</p>
                 ) : (
                   <ul className="space-y-2" data-testid="decision-list">
                     {data.decisions.map((d) => (
                       <li key={d.id} className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm">
                         <span className="font-mono text-xs text-slate-400">{d.reviewer_id.slice(0, 8)}…</span>
                         <StatusBadge status={d.decision === "approve" ? "approved" : "rejected"} label={d.decision} />
-                        <span className="text-xs text-slate-500">{new Date(d.created_at).toLocaleString()}</span>
+                        <span className="text-xs text-slate-400">{new Date(d.created_at).toLocaleString()}</span>
                       </li>
                     ))}
                   </ul>
@@ -99,13 +99,13 @@ export default function ApprovalDetail() {
             <div className="space-y-4">
               <Card testid="approval-actions">
                 <h3 className="mb-3 font-heading text-lg font-semibold text-slate-200">Cast Decision</h3>
-                {!canAct && <p className="mb-3 text-sm text-slate-500">This approval is {data.status} and cannot accept new decisions.</p>}
+                {!canAct && <p className="mb-3 text-sm text-slate-400">This approval is {data.status} and cannot accept new decisions.</p>}
                 <textarea
                   data-testid="decision-comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Optional comment / reason…"
-                  className="mb-3 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="mb-3 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
                   rows={3}
                 />
                 {actionError && <div data-testid="decision-error" className="mb-3 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{actionError}</div>}

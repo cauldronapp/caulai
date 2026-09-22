@@ -42,7 +42,7 @@ export function Layout({ children }) {
               </div>
               <div>
                 <div className="font-heading text-sm font-bold tracking-tight text-slate-100">CAUL AI</div>
-                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Command Center</div>
+                <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Command Center</div>
               </div>
             </div>
             <nav className="flex flex-col gap-1" data-testid="primary-nav">
@@ -81,7 +81,7 @@ export function Layout({ children }) {
             <div className="truncate text-sm font-medium text-slate-200" data-testid="current-user-name">
               {user?.display_name}
             </div>
-            <div className="truncate font-mono text-[11px] text-slate-500" data-testid="current-user-email">
+            <div className="truncate font-mono text-[11px] text-slate-400" data-testid="current-user-email">
               {user?.email}
             </div>
             <div className="mt-1 flex flex-wrap gap-1">

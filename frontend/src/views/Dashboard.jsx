@@ -19,7 +19,7 @@ function Stat({ icon: Icon, label, value, tone = "slate", to, testid }) {
     <Card testid={testid} className={`${tones[tone]} transition-transform hover:-translate-y-0.5`}>
       <div className="flex items-start justify-between">
         <Icon className="h-5 w-5 opacity-80" />
-        {to && <ArrowUpRight className="h-4 w-4 text-slate-500" />}
+        {to && <ArrowUpRight className="h-4 w-4 text-slate-400" />}
       </div>
       <div className="mt-4 font-heading text-3xl font-bold text-slate-100">{value}</div>
       <div className="mt-1 font-mono text-xs uppercase tracking-wider text-slate-400">{label}</div>

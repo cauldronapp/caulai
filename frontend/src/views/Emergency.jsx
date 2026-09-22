@@ -27,7 +27,7 @@ export default function Emergency() {
     <Layout>
       <PageHeader title="Emergency Controls" subtitle="Global & granular pause, revocation, queue drain, rollback. Operates against STUB paths only." />
       <div className="space-y-4 p-6">
-        <div className="flex items-center gap-2 rounded-md border border-purple-500/30 bg-purple-500/10 px-3 py-2 font-mono text-xs text-purple-300" data-testid="emergency-stub-note">
+        <div className="flex items-center gap-2 rounded-md border border-purple-500/30 bg-purple-500/15 px-3 py-2 font-mono text-xs text-purple-200" data-testid="emergency-stub-note">
           <ShieldAlert className="h-3.5 w-3.5" /> STUB PATHS ONLY — not proven for live connectors.
         </div>
         {isLoading && <Loading testid="emergency-loading" />}
@@ -63,7 +63,7 @@ export default function Emergency() {
               <h3 className="mb-3 font-heading text-lg font-semibold text-slate-200">Granular Pauses</h3>
               <div className="space-y-2" data-testid="granular-pause-list">
                 {data.pauses.filter((p) => p.scope === "granular").length === 0 && (
-                  <p className="text-sm text-slate-500">No granular pauses configured.</p>
+                  <p className="text-sm text-slate-400">No granular pauses configured.</p>
                 )}
                 {data.pauses.filter((p) => p.scope === "granular").map((p) => (
                   <div key={p.id} className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2">

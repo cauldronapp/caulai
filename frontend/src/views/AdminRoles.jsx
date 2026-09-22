@@ -30,7 +30,7 @@ export default function AdminRoles() {
           <Card key={r.id} testid={`role-${r.name}`}>
             <div className="flex items-center justify-between">
               <h3 className="font-heading text-lg font-semibold text-slate-200">{r.name}</h3>
-              <span className="font-mono text-xs text-slate-500">{r.permissions.length} permissions</span>
+              <span className="font-mono text-xs text-slate-400">{r.permissions.length} permissions</span>
             </div>
             <p className="mt-1 text-sm text-slate-400">{r.description}</p>
             <div className="mt-3 flex flex-wrap gap-1">

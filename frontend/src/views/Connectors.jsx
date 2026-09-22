@@ -54,13 +54,13 @@ export default function Connectors() {
               <Card key={c.id} testid={`connector-${c.id}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Plug className="h-5 w-5 text-slate-500" />
+                    <Plug className="h-5 w-5 text-slate-400" />
                     <span className="font-heading text-base font-semibold text-slate-200">{c.name}</span>
                   </div>
                   <StatusBadge testid={`connector-status-${c.id}`} status="not_connected" label="NOT CONNECTED" />
                 </div>
-                <div className="mt-2 font-mono text-xs uppercase tracking-wider text-slate-500">{c.category}</div>
-                <p className="mt-3 text-xs text-slate-500">No credential fields shown. Activation requires passing the connector contract suite (Phase 1B, separate approval).</p>
+                <div className="mt-2 font-mono text-xs uppercase tracking-wider text-slate-400">{c.category}</div>
+                <p className="mt-3 text-xs text-slate-400">No credential fields shown. Activation requires passing the connector contract suite (Phase 1B, separate approval).</p>
               </Card>
             ))}
           </div>

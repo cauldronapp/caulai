@@ -29,11 +29,11 @@ export default function Notifications() {
         {data && data.map((n) => (
           <Card key={n.id} testid={`notification-${n.id}`} className={n.read ? "opacity-60" : "border-indigo-500/30"}>
             <div className="flex items-start gap-3">
-              <Bell className={`mt-0.5 h-4 w-4 ${n.read ? "text-slate-500" : "text-indigo-400"}`} />
+              <Bell className={`mt-0.5 h-4 w-4 ${n.read ? "text-slate-400" : "text-indigo-400"}`} />
               <div>
                 <div className="font-medium text-slate-200">{n.title}</div>
                 <div className="text-sm text-slate-400">{n.body}</div>
-                <div className="mt-1 font-mono text-[11px] text-slate-500">{new Date(n.created_at).toLocaleString()}</div>
+                <div className="mt-1 font-mono text-[11px] text-slate-400">{new Date(n.created_at).toLocaleString()}</div>
               </div>
             </div>
           </Card>

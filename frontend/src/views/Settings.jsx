@@ -20,18 +20,18 @@ export default function Settings() {
         {error && <ErrorState testid="settings-error" message={error.message} onRetry={refetch} />}
         {sub && (
           <Card testid="setting-subscription">
-            <div className="font-mono text-xs uppercase tracking-wider text-slate-500">Subscription</div>
+            <div className="font-mono text-xs uppercase tracking-wider text-slate-400">Subscription</div>
             <div className="mt-2 font-heading text-3xl font-bold text-slate-100">${sub.amount}<span className="text-base text-slate-400">/{sub.period}</span></div>
             <div className="mt-1 text-sm text-slate-400">{sub.label} · {sub.currency}</div>
-            <div className="mt-3 font-mono text-xs text-slate-500">version {byKey.subscription.version}</div>
+            <div className="mt-3 font-mono text-xs text-slate-400">version {byKey.subscription.version}</div>
           </Card>
         )}
         {fee && (
           <Card testid="setting-fee">
-            <div className="font-mono text-xs uppercase tracking-wider text-slate-500">Platform Fee</div>
+            <div className="font-mono text-xs uppercase tracking-wider text-slate-400">Platform Fee</div>
             <div className="mt-2 font-heading text-3xl font-bold text-slate-100">{fee.percent}%</div>
             <div className="mt-1 text-sm text-slate-400">{fee.label}</div>
-            <div className="mt-3 font-mono text-xs text-slate-500">version {byKey.platform_fee.version}</div>
+            <div className="mt-3 font-mono text-xs text-slate-400">version {byKey.platform_fee.version}</div>
           </Card>
         )}
       </div>

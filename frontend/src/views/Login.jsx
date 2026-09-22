@@ -56,7 +56,7 @@ export default function Login() {
           </div>
           <div>
             <div className="font-heading text-lg font-bold tracking-tight">CAUL AI</div>
-            <div className="font-mono text-xs uppercase tracking-wider text-slate-500">Cauldron Growth OS Command Center</div>
+            <div className="font-mono text-xs uppercase tracking-wider text-slate-400">Cauldron Growth OS Command Center</div>
           </div>
         </div>
         <div>
@@ -90,7 +90,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="username"
                 placeholder="execowner@example.invalid"
-                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
             <div>
@@ -102,7 +102,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
             {error && (
@@ -121,7 +121,7 @@ export default function Login() {
           </form>
 
           <div className="mt-8">
-            <p className="mb-2 font-mono text-xs uppercase tracking-wider text-slate-500">Quick stub sign-in (password autofilled)</p>
+            <p className="mb-2 font-mono text-xs uppercase tracking-wider text-slate-400">Quick stub sign-in (password autofilled)</p>
             <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" data-testid="stub-quick-accounts">
               {STUB_ACCOUNTS.map((a) => (
                 <button
@@ -131,7 +131,7 @@ export default function Login() {
                   className="rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-300 transition-colors hover:border-indigo-500/40 hover:bg-slate-800 hover:text-white"
                 >
                   <div className="font-medium">{a.label}</div>
-                  <div className="font-mono text-[10px] text-slate-500">{a.email}</div>
+                  <div className="font-mono text-[10px] text-slate-400">{a.email}</div>
                 </button>
               ))}
             </div>
