@@ -53,3 +53,8 @@ async def verify_audit(request: Request, background: BackgroundTasks):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid cron auth")
     background.add_task(run_scheduled_verification)
     return {"accepted": True, "scope": ["dev", "staging"]}
+
+
+# Marker recognised by the CI route-permission coverage test: HMAC/webhook-authenticated
+# (WEBHOOK_CRON_SECRET), intentionally not RBAC-gated. Applies to all cron endpoints.
+verify_audit.caul_webhook_auth = True
