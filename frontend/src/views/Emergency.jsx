@@ -32,7 +32,7 @@ export default function Emergency() {
         </div>
         {isLoading && <Loading testid="emergency-loading" />}
         {error && <ErrorState testid="emergency-error" message={error.message} onRetry={refetch} />}
-        {err && <div data-testid="emergency-action-error" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{err}</div>}
+        {err && <div data-testid="emergency-action-error" role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{err}</div>}
         {data && (
           <>
             <Card testid="global-pause-card" className={globalPaused ? "border-purple-500/40" : ""}>

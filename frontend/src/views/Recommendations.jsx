@@ -43,21 +43,21 @@ export default function Recommendations() {
         {open && (
           <Card testid="recommendation-form">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <input data-testid="rec-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
-              <input data-testid="rec-category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
-              <select data-testid="rec-tier" value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value })} className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <input data-testid="rec-title" aria-label="Recommendation title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+              <input data-testid="rec-category" aria-label="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+              <select data-testid="rec-tier" aria-label="Tier" value={form.tier} onChange={(e) => setForm({ ...form, tier: e.target.value })} className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
                 <option value="auto">auto</option>
                 <option value="requires_approval">requires_approval</option>
                 <option value="permanently_prohibited">permanently_prohibited</option>
               </select>
-              <select data-testid="rec-risk" value={form.risk_level} onChange={(e) => setForm({ ...form, risk_level: e.target.value })} className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <select data-testid="rec-risk" aria-label="Risk level" value={form.risk_level} onChange={(e) => setForm({ ...form, risk_level: e.target.value })} className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
                 <option value="low">low</option>
                 <option value="medium">medium</option>
                 <option value="high">high</option>
               </select>
-              <textarea data-testid="rec-payload" value={form.payload} onChange={(e) => setForm({ ...form, payload: e.target.value })} rows={3} className="font-mono sm:col-span-2 rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-emerald-300" />
+              <textarea data-testid="rec-payload" aria-label="Action payload (JSON)" value={form.payload} onChange={(e) => setForm({ ...form, payload: e.target.value })} rows={3} className="font-mono sm:col-span-2 rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-emerald-300" />
             </div>
-            {err && <div data-testid="rec-form-error" className="mt-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{err}</div>}
+            {err && <div data-testid="rec-form-error" role="alert" className="mt-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{err}</div>}
             <button data-testid="rec-submit" disabled={create.isPending} onClick={() => create.mutate()} className="mt-3 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50">Submit</button>
           </Card>
         )}
@@ -68,7 +68,7 @@ export default function Recommendations() {
           <div className="overflow-hidden rounded-xl border border-slate-800">
             <table className="w-full text-left text-sm" data-testid="recommendations-table">
               <thead className="bg-slate-900/60 font-mono text-xs uppercase tracking-wider text-slate-400">
-                <tr><th className="px-4 py-3">Title</th><th className="px-4 py-3">Tier</th><th className="px-4 py-3">Risk</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Digest</th></tr>
+                <tr><th scope="col" className="px-4 py-3">Title</th><th scope="col" className="px-4 py-3">Tier</th><th scope="col" className="px-4 py-3">Risk</th><th scope="col" className="px-4 py-3">Status</th><th scope="col" className="px-4 py-3">Digest</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.map((r) => (

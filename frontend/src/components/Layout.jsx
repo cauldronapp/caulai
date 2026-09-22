@@ -32,6 +32,13 @@ export function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#0A0D14] text-slate-100">
+      <a
+        href="#main-content"
+        data-testid="skip-to-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[60] focus:rounded focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Skip to main content
+      </a>
       <StubBanner />
       <div className="flex">
         <aside className="sticky top-[37px] hidden h-[calc(100vh-37px)] w-64 flex-col justify-between border-r border-slate-800 bg-slate-950 p-4 md:flex">
@@ -45,7 +52,7 @@ export function Layout({ children }) {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Command Center</div>
               </div>
             </div>
-            <nav className="flex flex-col gap-1" data-testid="primary-nav">
+            <nav aria-label="Primary" className="flex flex-col gap-1" data-testid="primary-nav">
               {NAV.filter((n) => can(n.perm)).map((n) => {
                 const Icon = n.icon;
                 return (
@@ -101,7 +108,7 @@ export function Layout({ children }) {
           </div>
         </aside>
 
-        <main className="min-h-[calc(100vh-37px)] flex-1">{children}</main>
+        <main id="main-content" tabIndex={-1} className="min-h-[calc(100vh-37px)] flex-1">{children}</main>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export default function AdminUsers() {
           <div className="overflow-hidden rounded-xl border border-slate-800">
             <table className="w-full text-left text-sm" data-testid="users-table">
               <thead className="bg-slate-900/60 font-mono text-xs uppercase tracking-wider text-slate-400">
-                <tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Roles</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Status</th></tr>
+                <tr><th scope="col" className="px-4 py-3">Name</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Roles</th><th scope="col" className="px-4 py-3">Type</th><th scope="col" className="px-4 py-3">Status</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.map((u) => (

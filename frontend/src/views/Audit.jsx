@@ -54,7 +54,7 @@ export default function Audit() {
         {v && (
           <Card testid="audit-chain-banner" className={v.verified ? "border-emerald-500/30" : "border-rose-500/40"}>
             <div className="flex flex-wrap items-center gap-4">
-              <div className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs ${v.verified ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-rose-500/30 bg-rose-500/10 text-rose-300"}`} data-testid="audit-chain-verdict">
+              <div className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs ${v.verified ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-rose-500/30 bg-rose-500/10 text-rose-300"}`} data-testid="audit-chain-verdict" role="status" aria-live="polite">
                 <ShieldCheck className="h-3.5 w-3.5" /> {v.verified ? "CHAIN VERIFIED" : "BROKEN LINK DETECTED"}
               </div>
               <span className="font-mono text-xs text-slate-400">Events: <span className="text-slate-200">{v.event_count}</span></span>
@@ -89,13 +89,13 @@ export default function Audit() {
             <table className="w-full text-left text-sm" data-testid="audit-table">
               <thead className="bg-slate-900/60 font-mono text-xs uppercase tracking-wider text-slate-400">
                 <tr>
-                  <th className="px-4 py-3">Seq</th>
-                  <th className="px-4 py-3">Timestamp</th>
-                  <th className="px-4 py-3">Actor</th>
-                  <th className="px-4 py-3">Action</th>
-                  <th className="px-4 py-3">Resource</th>
-                  <th className="px-4 py-3">Prev</th>
-                  <th className="px-4 py-3">Hash</th>
+                  <th scope="col" className="px-4 py-3">Seq</th>
+                  <th scope="col" className="px-4 py-3">Timestamp</th>
+                  <th scope="col" className="px-4 py-3">Actor</th>
+                  <th scope="col" className="px-4 py-3">Action</th>
+                  <th scope="col" className="px-4 py-3">Resource</th>
+                  <th scope="col" className="px-4 py-3">Prev</th>
+                  <th scope="col" className="px-4 py-3">Hash</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">

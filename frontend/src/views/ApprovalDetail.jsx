@@ -108,7 +108,7 @@ export default function ApprovalDetail() {
                   className="mb-3 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
                   rows={3}
                 />
-                {actionError && <div data-testid="decision-error" className="mb-3 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{actionError}</div>}
+                {actionError && <div data-testid="decision-error" role="alert" className="mb-3 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{actionError}</div>}
                 <div className="flex flex-col gap-2">
                   {can("approval:approve") && (
                     <button data-testid="approve-button" disabled={!canAct || decide.isPending} onClick={() => decide.mutate({ kind: "approve" })} className="flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40">

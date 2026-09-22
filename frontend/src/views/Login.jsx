@@ -83,8 +83,9 @@ export default function Login() {
 
           <form onSubmit={submit} className="mt-6 space-y-4" data-testid="login-form">
             <div>
-              <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-slate-400">Email</label>
+              <label htmlFor="login-email" className="mb-1 block font-mono text-xs uppercase tracking-wider text-slate-400">Email</label>
               <input
+                id="login-email"
                 data-testid="login-email-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -94,8 +95,9 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="mb-1 block font-mono text-xs uppercase tracking-wider text-slate-400">Password</label>
+              <label htmlFor="login-password" className="mb-1 block font-mono text-xs uppercase tracking-wider text-slate-400">Password</label>
               <input
+                id="login-password"
                 data-testid="login-password-input"
                 type="password"
                 value={password}
@@ -106,7 +108,7 @@ export default function Login() {
               />
             </div>
             {error && (
-              <div data-testid="login-error" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+              <div data-testid="login-error" role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
                 {error}
               </div>
             )}

@@ -44,7 +44,8 @@ export function Hash({ value, testid }) {
       data-testid={testid}
       onClick={copy}
       title={value}
-      className="inline-flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-emerald-400 transition-colors hover:border-emerald-700 hover:text-emerald-300"
+      aria-label={`Hash ${value}. Activate to copy full value.`}
+      className="inline-flex items-center gap-1.5 rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-emerald-400 transition-colors hover:border-emerald-700 hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
     >
       {short}
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3 opacity-60" />}
@@ -85,7 +86,7 @@ export function EmptyState({ message, testid }) {
 
 export function ErrorState({ message, onRetry, testid }) {
   return (
-    <div data-testid={testid} className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-6">
+    <div data-testid={testid} role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-6">
       <p className="font-mono text-sm text-rose-300">Error: {message}</p>
       {onRetry && (
         <button
@@ -102,9 +103,10 @@ export function ErrorState({ message, onRetry, testid }) {
 
 export function Loading({ testid }) {
   return (
-    <div data-testid={testid} className="space-y-3">
+    <div data-testid={testid} role="status" aria-live="polite" aria-busy="true" className="space-y-3">
+      <span className="sr-only">Loading, please wait…</span>
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="h-14 animate-pulse rounded-lg border border-slate-800 bg-slate-900/50" />
+        <div key={i} aria-hidden="true" className="h-14 animate-pulse rounded-lg border border-slate-800 bg-slate-900/50" />
       ))}
     </div>
   );

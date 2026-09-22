@@ -23,12 +23,12 @@ export default function Approvals() {
             <table className="w-full text-left text-sm" data-testid="approvals-table">
               <thead className="bg-slate-900/60 font-mono text-xs uppercase tracking-wider text-slate-400">
                 <tr>
-                  <th className="px-4 py-3">Recommendation</th>
-                  <th className="px-4 py-3">Risk</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Approvals</th>
-                  <th className="px-4 py-3">Payload Bound</th>
-                  <th className="px-4 py-3">Digest</th>
+                  <th scope="col" className="px-4 py-3">Recommendation</th>
+                  <th scope="col" className="px-4 py-3">Risk</th>
+                  <th scope="col" className="px-4 py-3">Status</th>
+                  <th scope="col" className="px-4 py-3">Approvals</th>
+                  <th scope="col" className="px-4 py-3">Payload Bound</th>
+                  <th scope="col" className="px-4 py-3">Digest</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
@@ -37,7 +37,11 @@ export default function Approvals() {
                     key={a.id}
                     data-testid={`approval-row-${a.id}`}
                     onClick={() => navigate(`/approvals/${a.id}`)}
-                    className="cursor-pointer bg-[#111622] transition-colors hover:bg-slate-800/60"
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/approvals/${a.id}`); } }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Open approval for ${a.recommendation_title}, status ${a.status}`}
+                    className="cursor-pointer bg-[#111622] transition-colors hover:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
                   >
                     <td className="px-4 py-3 font-medium text-slate-200">{a.recommendation_title}</td>
                     <td className="px-4 py-3">
