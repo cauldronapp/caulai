@@ -1,7 +1,13 @@
 name: CAUL AI CI (Phase 1A)
 
 # NOTE: If enabling CI on the Cauldron-controlled private repo incurs any charge,
-# STOP and flag it before enabling (per handoff §9). This workflow assumes $0.
+# STOP and flag it before enabling (per handoff). This workflow assumes $0 and uses
+# only the GitHub-hosted runner + an ephemeral postgres service container.
+#
+# Gates enforced on every PR/push to main|develop:
+#   1. Default-deny route-permission coverage (tests/test_route_coverage.py)
+#   2. 100% backend line coverage (fail_under=100 in backend/.coveragerc)
+#   3. Live hardening suite (per-env cron secret, rate-limits, audit INSERT-only)
 
 on:
   pull_request:
@@ -26,28 +32,74 @@ jobs:
     env:
       APP_ENV: dev
       JWT_SECRET: ci_secret_not_a_real_key
-      DEV_DATABASE_URL: postgresql+psycopg://postgres:caul_local_dev_pw@localhost:5432/caul_dev
+      CORS_ORIGINS: http://localhost:3000
+      WEBHOOK_CRON_SECRET: ci_shared_cron_secret
+      WEBHOOK_CRON_SECRET_DEV: ci_dev_cron_secret
+      WEBHOOK_CRON_SECRET_STAGING: ci_staging_cron_secret
+      DEV_DATABASE_URL: postgresql+psycopg://caul_dev_user:dev_pw_local@localhost:5432/caul_dev
       DEV_ADMIN_DATABASE_URL: postgresql+psycopg://postgres:caul_local_dev_pw@localhost:5432/caul_dev
+      STAGING_DATABASE_URL: postgresql+psycopg://caul_staging_user:staging_pw_local@localhost:5432/caul_staging
+      STAGING_ADMIN_DATABASE_URL: postgresql+psycopg://postgres:caul_local_dev_pw@localhost:5432/caul_staging
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - name: Install
+
+      - name: Install backend deps
         run: |
           cd backend
           pip install -r requirements.txt
-      - name: Lint (flake8)
-        run: cd backend && flake8 app --max-line-length=120 --extend-ignore=E203,W503 || true
-      - name: Migrations
+
+      - name: Provision least-privilege roles + staging database
+        env:
+          PGPASSWORD: caul_local_dev_pw
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          PSQL="psql -h localhost -U postgres -v ON_ERROR_STOP=1"
+          $PSQL -d caul_dev -c "CREATE ROLE caul_dev_user LOGIN PASSWORD 'dev_pw_local';"
+          $PSQL -d caul_dev -c "CREATE ROLE caul_staging_user LOGIN PASSWORD 'staging_pw_local';"
+          $PSQL -d caul_dev -c "CREATE DATABASE caul_staging OWNER postgres;"
+          $PSQL -d caul_dev -c "GRANT CONNECT ON DATABASE caul_dev TO caul_dev_user;"
+          $PSQL -d caul_staging -c "GRANT CONNECT ON DATABASE caul_staging TO caul_staging_user;"
+
+      - name: Lint (flake8, non-blocking)
+        run: cd backend && pip install flake8 && flake8 app --max-line-length=120 --extend-ignore=E203,W503 || true
+
+      - name: Migrate + grants (dev)
         run: cd backend && python -m alembic upgrade head && python -m scripts.apply_grants
-      - name: Route-permission coverage (CI-enforced default-deny)
+
+      - name: Migrate + grants (staging)
+        env: { APP_ENV: staging }
+        run: cd backend && python -m alembic upgrade head && python -m scripts.apply_grants
+
+      - name: Default-deny route-permission coverage
         run: cd backend && python -m pytest tests/test_route_coverage.py -q
-      - name: Unit / integration / audit / adversarial tests
-        run: cd backend && python -m pytest tests/ -q
-      - name: SAST (bandit)
+
+      - name: Tests + 100% coverage gate (in-process; no server required)
+        run: |
+          cd backend
+          python -m pytest tests/ --ignore=tests/test_hardening.py \
+            --cov=app --cov=server --cov-report=term-missing --cov-report=xml
+
+      - name: Live hardening suite (boots stub server)
+        run: |
+          cd backend
+          uvicorn server:app --host 0.0.0.0 --port 8001 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8001/api/health && break || sleep 1; done
+          python -m pytest tests/test_hardening.py -q
+
+      - name: SAST (bandit, non-blocking)
         run: cd backend && pip install bandit && bandit -r app -ll || true
-      - name: Dependency scan (pip-audit)
+
+      - name: Dependency scan (pip-audit, non-blocking)
         run: cd backend && pip install pip-audit && pip-audit || true
+
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
 
   frontend:
     runs-on: ubuntu-latest

@@ -68,6 +68,9 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 
 ## Post-acceptance work (2026-06)
 - **100% backend test coverage achieved and enforced** (original-prompt requirement). 123 tests; `fail_under=100` in `/app/backend/.coveragerc`. New suites: `tests/test_endpoints.py` (full TestClient router + auth/deps/CSRF/cron coverage), `tests/test_units.py` (utility/domain modules), `tests/test_seed_full.py` (seed create+exists on a throwaway schema). Doc: `docs/TEST_COVERAGE.md`.
+- **CI hardened** (`.github/workflows/ci.yml`): provisions least-privilege roles + separate `caul_staging` DB, runs dev+staging migrations/grants, default-deny route coverage, the 100% coverage gate, and a live hardening suite (boots stub server). Uploads `coverage.xml`.
+- **requirements.txt cleanup**: removed unused `emergentintegrations==0.2.1` and the `litellm` wheel (no LLM usage in Phase 1A) — they caused a pip resolver conflict that would break CI and redeploys. `pip install -r requirements.txt` now resolves cleanly.
+- Rewrote `README.md` (overview, stack, local dev, testing/coverage, CI, security + phase boundaries, coverage badge).
 - Removed orphaned `frontend/src/views/ComingSoon.jsx`.
 - Deployment readiness scan: PASS (no blockers; CORS auto-updated at deploy; Postgres self-hosted in-container — fresh prod DB seeds via idempotent guards).
 - Executive acceptance certificate PDF generated: `docs/PHASE_1A_ACCEPTANCE_CERTIFICATE.pdf`.
