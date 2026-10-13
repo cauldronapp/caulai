@@ -75,5 +75,10 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Deployment readiness scan: PASS (no blockers; CORS auto-updated at deploy; Postgres self-hosted in-container — fresh prod DB seeds via idempotent guards).
 - Executive acceptance certificate PDF generated: `docs/PHASE_1A_ACCEPTANCE_CERTIFICATE.pdf`.
 
+## Phase 1B prep & production hardening (2026-06)
+- **Production hardening (no external spend):** added `/api/health/ready` readiness probe (DB + seed state), structured **JSON logging** with per-request `X-Request-ID` correlation middleware. 126 tests, **100% coverage maintained**; `/api/health/ready` whitelisted in route-coverage.
+- **Auth0 pre-connection dossier** (`docs/PHASE_1B_AUTH0_DOSSIER.md/.pdf`): exact resources/keys, SDK versions, codebase mapping (RBAC stays in Postgres; Auth0 = identity only, behind `AUTH_PROVIDER` flag with stub rollback), migration/cutover plan, test matrix, and the approval/values needed before any connection. ExecOwner identity = **sean.gaden@gmail.com**. NOTHING connected/wired — awaits written approval.
+- Deal Flow OS integration paused by user; Phase 0 deliverables complete (bundle + auto-rebuild script `docs/build_dealflow_bundle.sh`).
+
 ## Next tasks
-Phase 1A is CLOSED and ACCEPTED with 100% enforced coverage. Working toward CLOUD deployment. Do NOT begin Phase 1B (Auth0, staging infra, live connectors, off-box export, external integrations) without separate explicit written approval.
+Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.

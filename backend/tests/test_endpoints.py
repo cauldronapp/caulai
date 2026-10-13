@@ -83,6 +83,31 @@ def test_lifespan_startup_runs_seed():
         assert c.get("/api/health").status_code == 200
 
 
+def test_readiness_probe_ok():
+    r = TestClient(app).get("/api/health/ready")
+    assert r.status_code == 200 and r.json()["status"] == "ready"
+    assert r.json()["permissions"] > 0
+
+
+def test_request_id_header_present_and_echoed():
+    c = TestClient(app)
+    r = c.get("/api/health")
+    assert r.headers.get("X-Request-ID")
+    r2 = c.get("/api/health", headers={"X-Request-ID": "fixed-req-123"})
+    assert r2.headers.get("X-Request-ID") == "fixed-req-123"
+
+
+def test_json_log_formatter_outputs_json():
+    import json as _json
+    import logging as _logging
+    from server import JsonLogFormatter, request_id_var
+    request_id_var.set("rid-xyz")
+    rec = _logging.LogRecord("caul", _logging.INFO, __file__, 1, "hello %s", ("world",), None)
+    payload = _json.loads(JsonLogFormatter().format(rec))
+    assert payload["msg"] == "hello world" and payload["request_id"] == "rid-xyz"
+    assert payload["level"] == "INFO" and payload["logger"] == "caul"
+
+
 # ===================== auth =====================
 def test_provider_metadata_public():
     c = TestClient(app)

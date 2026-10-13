@@ -3,9 +3,13 @@
 AUTH STUB — NOT PRODUCTION. Dev/staging only. No production environment, no external
 IdP connection, no live connectors, no external egress.
 """
+import json
 import logging
 import os
+import uuid
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
@@ -20,8 +24,25 @@ from app.routers import (
     notifications, admin_manage, cron,
 )
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
+
+
+class JsonLogFormatter(logging.Formatter):
+    """Structured single-line JSON logs carrying the current request id."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return json.dumps({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "request_id": request_id_var.get(),
+            "msg": record.getMessage(),
+        })
+
+
+logging.basicConfig(level=logging.INFO)
+for _h in logging.getLogger().handlers:
+    _h.setFormatter(JsonLogFormatter())
 logger = logging.getLogger("caul")
 
 
@@ -68,6 +89,21 @@ async def security_headers_and_csrf(request, call_next):
     return resp
 
 
+@app.middleware("http")
+async def request_context(request, call_next):
+    # Assign/propagate a request id for structured logs and client correlation.
+    rid = request.headers.get("x-request-id") or uuid.uuid4().hex
+    token = request_id_var.set(rid)
+    logger.info("request start %s %s", request.method, request.url.path)
+    try:
+        response = await call_next(request)
+    finally:
+        request_id_var.reset(token)
+    response.headers["X-Request-ID"] = rid
+    logger.info("request done %s %s status=%s", request.method, request.url.path, response.status_code)
+    return response
+
+
 @app.get("/api/")
 def root():
     return {"service": "CAUL AI", "phase": "1A",
@@ -81,6 +117,18 @@ def health(db: Session = Depends(get_db)):
     return {"status": "ok", "env": get_app_env(),
             "database": db.execute(text("SELECT current_database()")).scalar_one(),
             "chain_env": get_chain_env(), "chain_org": get_chain_org()}
+
+
+@app.get("/api/health/ready")
+def readiness(db: Session = Depends(get_db)):
+    """Readiness probe: DB reachable AND seed/migrations applied (permissions present)."""
+    perms = db.execute(text("SELECT COUNT(*) FROM permissions")).scalar_one()
+    ready = perms > 0
+    return JSONResponse(
+        status_code=200 if ready else 503,
+        content={"status": "ready" if ready else "not_ready",
+                 "env": get_app_env(), "permissions": perms},
+    )
 
 
 for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, admin_manage, system, notifications, cron):

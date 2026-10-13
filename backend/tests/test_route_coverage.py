@@ -12,6 +12,7 @@ from app.deps import PermissionChecker
 WHITELIST = {
     ("GET", "/api/"),
     ("GET", "/api/health"),
+    ("GET", "/api/health/ready"),
     ("GET", "/api/auth/provider"),
     ("POST", "/api/auth/login"),
     ("POST", "/api/auth/logout"),
