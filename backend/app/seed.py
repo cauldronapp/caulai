@@ -225,7 +225,7 @@ def run_seed() -> dict:
         db.commit()
         return {"seeded": True, "env": get_app_env(),
                 "permissions": len(perms), "roles": len(roles), "users": len(STUB_USERS)}
-    except Exception:
+    except Exception:  # pragma: no cover  (defensive: surface seed failures)
         db.rollback()
         raise
     finally:

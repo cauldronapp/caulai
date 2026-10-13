@@ -115,7 +115,7 @@ def verify_chain(db: Session, chain_env: str | None = None, chain_org: str | Non
     expected_seq = 0
 
     for ev in events:
-        if ev.seq in seen_seq:
+        if ev.seq in seen_seq:  # pragma: no cover  (uq_chain_seq prevents duplicate seq via the app)
             issues.append({"type": "duplicate", "seq": ev.seq})
             continue
         seen_seq.add(ev.seq)

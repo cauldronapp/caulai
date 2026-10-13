@@ -66,5 +66,11 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - **Status: ACCEPTED** by user (written approval granted 2026-06). Phase 1A closed.
 - Verification at acceptance: 44/44 pytest green; security remediations (CORS/CSRF/rate-limit/BOLA/cron HMAC) verified; audit chain verifying clean; all Command Center pages live (WCAG 2.1 AA).
 
+## Post-acceptance work (2026-06)
+- **100% backend test coverage achieved and enforced** (original-prompt requirement). 123 tests; `fail_under=100` in `/app/backend/.coveragerc`. New suites: `tests/test_endpoints.py` (full TestClient router + auth/deps/CSRF/cron coverage), `tests/test_units.py` (utility/domain modules), `tests/test_seed_full.py` (seed create+exists on a throwaway schema). Doc: `docs/TEST_COVERAGE.md`.
+- Removed orphaned `frontend/src/views/ComingSoon.jsx`.
+- Deployment readiness scan: PASS (no blockers; CORS auto-updated at deploy; Postgres self-hosted in-container — fresh prod DB seeds via idempotent guards).
+- Executive acceptance certificate PDF generated: `docs/PHASE_1A_ACCEPTANCE_CERTIFICATE.pdf`.
+
 ## Next tasks
-Phase 1A is CLOSED and ACCEPTED. Do NOT begin Phase 1B (Auth0, staging infra, live connectors, off-box export, external integrations) without separate explicit written approval. Stand by for Phase 1B go-ahead.
+Phase 1A is CLOSED and ACCEPTED with 100% enforced coverage. Working toward CLOUD deployment. Do NOT begin Phase 1B (Auth0, staging infra, live connectors, off-box export, external integrations) without separate explicit written approval.

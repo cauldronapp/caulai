@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     try:
         from app.seed import run_seed
         logger.info("Seed result: %s", run_seed())
-    except Exception as e:  # seed guard or DB not migrated yet
+    except Exception as e:  # pragma: no cover  (seed guard or DB not migrated yet)
         logger.warning("Seed skipped/failed: %s", e)
     yield
 

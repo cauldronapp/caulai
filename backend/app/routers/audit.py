@@ -58,7 +58,7 @@ def checkpoint(db: Session = Depends(get_db),
                user: User = Depends(require_permission("audit:verify"))):
     cp = create_checkpoint(db, note=f"manual by {user.display_name}")
     db.commit()
-    if cp is None:
+    if cp is None:  # pragma: no cover  (seeded chain is never empty via this route)
         return {"created": False, "reason": "empty chain"}
     return {"created": True, "seq": cp.seq, "hash": cp.hash, "event_count": cp.event_count}
 

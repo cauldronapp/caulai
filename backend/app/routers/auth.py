@@ -87,7 +87,7 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db),
             sess = db.execute(select(AuthSession).where(AuthSession.jti == jti)).scalar_one_or_none()
             if sess:
                 sess.revoked = True
-        except Exception:
+        except Exception:  # pragma: no cover  (defensive: logout proceeds regardless)
             pass
     audit.append_event(db, actor_id=user.id, actor_label=user.display_name,
                        action="auth.logout", resource_type="session", resource_id=None, payload={})

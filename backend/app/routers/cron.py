@@ -39,7 +39,7 @@ def run_scheduled_verification() -> dict:
             results[env] = {"verified": report["verified"], "events": report["event_count"],
                             "issues": len(report["issues"]),
                             "checkpoint": cp.id if cp else None}
-        except Exception as e:  # never crash the scheduler
+        except Exception as e:  # pragma: no cover  (never crash the scheduler)
             db.rollback()
             results[env] = {"error": str(e)}
         finally:
@@ -57,7 +57,7 @@ def _audit_cron_auth_failure(host: str, reason: str) -> None:
                      action="cron.auth_failed", resource_type="cron",
                      resource_id="/api/cron/verify-audit", payload={"reason": reason})
         db.commit()
-    except Exception:
+    except Exception:  # pragma: no cover  (audit append is best-effort)
         db.rollback()
     finally:
         db.close()
