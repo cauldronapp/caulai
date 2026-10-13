@@ -72,7 +72,7 @@ def login(body: LoginRequest, response: Response, request: Request, db: Session 
     db.commit()
 
     response.set_cookie(key="access_token", value=token, httponly=True, secure=True,
-                        samesite="none", max_age=get_session_ttl_minutes() * 60, path="/")
+                        samesite="lax", max_age=get_session_ttl_minutes() * 60, path="/")
     return _user_out(user)
 
 

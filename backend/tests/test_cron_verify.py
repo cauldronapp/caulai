@@ -9,7 +9,7 @@ load_dotenv("/app/backend/.env")
 load_dotenv("/app/frontend/.env")
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/") or "http://localhost:8001"
-SECRET = os.environ.get("WEBHOOK_CRON_SECRET")
+SECRET = os.environ.get("WEBHOOK_CRON_SECRET_DEV") or os.environ.get("WEBHOOK_CRON_SECRET")
 URL = f"{BASE_URL}/api/cron/verify-audit"
 
 

@@ -30,7 +30,7 @@ def list_notifications(db: Session = Depends(get_db),
 def mark_read(notification_id: str, db: Session = Depends(get_db),
               user: User = Depends(require_permission("notification:update"))):
     n = db.get(Notification, notification_id)
-    if n is None:
+    if n is None or (n.user_id is not None and n.user_id != user.id):
         raise HTTPException(status_code=404, detail="Notification not found")
     n.read = True
     db.commit()
