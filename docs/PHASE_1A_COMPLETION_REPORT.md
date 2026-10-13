@@ -43,7 +43,11 @@ Global + granular pause/resume; execution-queue cancel + drain; emergency revoke
 Automated axe-core 4.10.2 (wcag2a+wcag2aa) audit across login, dashboard, audit, approvals, emergency, admin/roles, settings, connectors, recommendations → **0 violations** after remediation (contrast tokens raised; pending/paused badges de-pulsed and lightened). Responsive verified at 390×844 (no horizontal overflow; sidebar collapses <md; mobile dashboard 0 violations). Full evidence: `docs/ACCESSIBILITY_REPORT.md`. Visible focus rings, semantic labels, keyboard-activatable controls throughout.
 
 ## 13. Security-scan results
-CI runs bandit (SAST) + pip-audit (dependency scan). DB least-privilege; secrets in `.env` only; no hardcoded external credentials; connectors expose no credential fields.
+Read-only security audit at commit ~e0e6187. **2 HIGH findings — REMEDIATED & retested (testing_agent iteration_4, 44/44 + end-to-end):**
+- **SEC-001 (CORS):** `allow_origins=*`+credentials replaced with an explicit env allowlist (`CORS_ORIGINS`); arbitrary origins no longer reflected (evil origin → no ACAO).
+- **SEC-002 (CSRF):** session cookie now `SameSite=Lax` (+Secure+HttpOnly) and a middleware blocks cross-origin state-changing requests (non-allowlisted Origin → 403); security headers added (X-Frame-Options DENY, CSP frame-ancestors 'none', X-Content-Type-Options nosniff, HSTS).
+- **SEC-003 (LOW, fixed):** notification `mark_read` ownership-scoped (404 on others' rows).
+Hardening: per-env cron HMAC secrets (dev≠staging), rate-limited + audited (no-secret) cron/login failures, DB least-privilege + audit INSERT-only, no backend external egress, no committed secrets (bandit + pip-audit in CI). Residual P3 (documented, non-blocking): unused heavy deps in requirements.txt (e.g. ecdsa) not imported/reachable; `/docs` open in dev/staging; legacy `MONGO_URL`/`DB_NAME` keys retained (platform-protected, unused). **No critical/high findings remain.**
 
 ## 14. Known defects, risks & limitations
 - **Deferred (separate approval):** true separate-**server** DB isolation; scheduled audit-verification cron; Auth0 pre-connection dossier (Phase 1B).
