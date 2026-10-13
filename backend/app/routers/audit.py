@@ -3,7 +3,7 @@ import csv
 import io
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, update
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
@@ -96,9 +96,14 @@ class SavedFilterIn(BaseModel):
     shared: bool = False
 
 
-def _serialize_filter(f: SavedAuditFilter, user: User) -> dict:
+class PinIn(BaseModel):
+    pinned: bool = True
+
+
+def _serialize_filter(f: SavedAuditFilter, user: User, owner_label: str = "") -> dict:
     return {"id": f.id, "name": f.name, "query": f.query, "shared": f.shared,
-            "owned": f.owner_id == user.id, "created_at": f.created_at.isoformat()}
+            "is_default": f.is_default, "owned": f.owner_id == user.id,
+            "owner_label": owner_label, "created_at": f.created_at.isoformat()}
 
 
 @router.get("/filters")
@@ -107,9 +112,12 @@ def list_filters(db: Session = Depends(get_db),
     rows = db.execute(
         select(SavedAuditFilter)
         .where(or_(SavedAuditFilter.owner_id == user.id, SavedAuditFilter.shared.is_(True)))
-        .order_by(SavedAuditFilter.created_at.desc())
+        .order_by(SavedAuditFilter.is_default.desc(), SavedAuditFilter.created_at.desc())
     ).scalars().all()
-    return [_serialize_filter(f, user) for f in rows]
+    owners = {u.id: u.display_name for u in db.execute(
+        select(User).where(User.id.in_([r.owner_id for r in rows]))
+    ).scalars().all()} if rows else {}
+    return [_serialize_filter(f, user, owners.get(f.owner_id, "")) for f in rows]
 
 
 @router.post("/filters")
@@ -119,7 +127,28 @@ def create_filter(body: SavedFilterIn, db: Session = Depends(get_db),
     db.add(f)
     db.commit()
     db.refresh(f)
-    return _serialize_filter(f, user)
+    return _serialize_filter(f, user, user.display_name)
+
+
+@router.post("/filters/{fid}/pin")
+def pin_filter(fid: str, body: PinIn, db: Session = Depends(get_db),
+               user: User = Depends(require_permission("setting:update"))):
+    """Admins pin ONE team-wide default audit view (auto-shared). Pinning clears any prior default."""
+    f = db.get(SavedAuditFilter, fid)
+    if f is None:
+        raise HTTPException(status_code=404, detail="not found")
+    if body.pinned:
+        db.execute(update(SavedAuditFilter)
+                   .where(SavedAuditFilter.id != fid, SavedAuditFilter.is_default.is_(True))
+                   .values(is_default=False))
+        f.shared = True
+        f.is_default = True
+    else:
+        f.is_default = False
+    db.commit()
+    db.refresh(f)
+    owner = db.get(User, f.owner_id)
+    return _serialize_filter(f, user, owner.display_name if owner else "")
 
 
 @router.delete("/filters/{fid}")

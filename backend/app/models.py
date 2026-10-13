@@ -263,4 +263,5 @@ class SavedAuditFilter(Base):
     name: Mapped[str] = mapped_column(String(120))
     query: Mapped[dict] = mapped_column(JSONB, default=dict)
     shared: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

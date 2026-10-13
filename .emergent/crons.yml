@@ -6,3 +6,10 @@ crons:
     method: POST
     # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
     enabled: true
+  - name: weekly-governance-digest
+    description: "Generates a weekly governance digest (approvals, audit growth, emergency pauses) stored as a broadcast notification. No email sent."
+    cron: "0 13 * * 1"
+    endpoint: "{{BASE_URL}}/api/cron/weekly-digest"
+    method: POST
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    enabled: true

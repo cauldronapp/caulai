@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Download, ShieldCheck, RefreshCw } from "lucide-react";
+import { Search, Download, ShieldCheck, RefreshCw, Star, Pin, PinOff } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Layout } from "@/components/Layout";
@@ -42,7 +42,8 @@ export default function Audit() {
     mutationFn: async () => {
       const name = window.prompt("Name this view:");
       if (!name) return null;
-      return (await api.post("/audit/filters", { name, query: { q: query }, shared: false })).data;
+      const shared = window.confirm("Share this view with your team?\n\nOK = shared with everyone · Cancel = keep private");
+      return (await api.post("/audit/filters", { name, query: { q: query }, shared })).data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["audit-filters"] }),
   });
@@ -50,7 +51,23 @@ export default function Audit() {
     mutationFn: async (id) => (await api.delete(`/audit/filters/${id}`)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["audit-filters"] }),
   });
+  const pinFilter = useMutation({
+    mutationFn: async ({ id, pinned }) => (await api.post(`/audit/filters/${id}/pin`, { pinned })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audit-filters"] }),
+  });
   const applyFilter = (f) => { const nq = f.query?.q || ""; setQ(nq); setQuery(nq); };
+  const canPin = can("setting:update");
+
+  // Apply the team-wide pinned default view once on first load.
+  const [appliedDefault, setAppliedDefault] = useState(false);
+  useEffect(() => {
+    if (!appliedDefault && filters.data) {
+      const def = filters.data.find((f) => f.is_default);
+      if (def) applyFilter(def);
+      setAppliedDefault(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.data, appliedDefault]);
 
   const v = verify.data;
 
@@ -103,8 +120,24 @@ export default function Audit() {
         <div className="flex flex-wrap items-center gap-2" data-testid="saved-filters-bar">
           <button data-testid="save-filter-button" onClick={() => saveFilter.mutate()} className="rounded-md border border-indigo-500/40 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-200 hover:bg-indigo-500/20">+ Save view</button>
           {filters.data?.map((f) => (
-            <span key={f.id} data-testid={`saved-filter-${f.id}`} className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs text-slate-200">
-              <button onClick={() => applyFilter(f)} className="hover:text-white">{f.name}{f.shared ? " · shared" : ""}</button>
+            <span key={f.id} data-testid={`saved-filter-${f.id}`} className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs ${f.is_default ? "border-amber-500/40 bg-amber-500/10 text-amber-200" : "border-slate-700 bg-slate-800 text-slate-200"}`}>
+              {f.is_default && <Star className="h-3 w-3 fill-amber-400 text-amber-400" data-testid={`default-filter-star-${f.id}`} />}
+              <button onClick={() => applyFilter(f)} className="hover:text-white">{f.name}</button>
+              {f.shared && (
+                <span className="text-[11px] text-slate-400" data-testid={`filter-owner-${f.id}`}>
+                  · {f.owned ? "shared by you" : `by ${f.owner_label || "teammate"}`}
+                </span>
+              )}
+              {canPin && f.shared && (
+                <button
+                  data-testid={`pin-filter-${f.id}`}
+                  onClick={() => pinFilter.mutate({ id: f.id, pinned: !f.is_default })}
+                  aria-label={f.is_default ? `Unpin ${f.name} as default` : `Pin ${f.name} as team default`}
+                  className="text-slate-500 hover:text-amber-300"
+                >
+                  {f.is_default ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                </button>
+              )}
               {f.owned && <button data-testid={`delete-filter-${f.id}`} onClick={() => deleteFilter.mutate(f.id)} aria-label={`Delete ${f.name}`} className="text-slate-500 hover:text-rose-300">×</button>}
             </span>
           ))}

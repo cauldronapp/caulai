@@ -249,8 +249,21 @@ def test_audit_saved_filters():
     assert created.status_code == 200
     fid = created.json()["id"]
     assert created.json()["owned"] is True
+    assert created.json()["is_default"] is False
+    assert created.json()["owner_label"]  # owner display name present
     lst = admin.get("/api/audit/filters")
     assert lst.status_code == 200 and any(f["id"] == fid for f in lst.json())
+    assert all("owner_label" in f and "is_default" in f for f in lst.json())
+    # pin as admin (setting:update) -> team default + stays shared
+    pinned = admin.post(f"/api/audit/filters/{fid}/pin", json={"pinned": True})
+    assert pinned.status_code == 200
+    assert pinned.json()["is_default"] is True and pinned.json()["shared"] is True
+    # non-admin (auditor lacks setting:update) cannot pin
+    assert as_role(AUDITOR).post(f"/api/audit/filters/{fid}/pin", json={"pinned": True}).status_code == 403
+    # pin missing -> 404
+    assert admin.post("/api/audit/filters/missing/pin", json={"pinned": True}).status_code == 404
+    # unpin
+    assert admin.post(f"/api/audit/filters/{fid}/pin", json={"pinned": False}).json()["is_default"] is False
     assert admin.delete("/api/audit/filters/does-not-exist").status_code == 404
     assert admin.delete(f"/api/audit/filters/{fid}").json()["deleted"] is True
 
@@ -518,6 +531,23 @@ def test_cron_run_scheduled_verification_direct():
     from app.routers.cron import run_scheduled_verification
     res = run_scheduled_verification()
     assert "dev" in res and "staging" in res
+
+
+def test_cron_weekly_digest():
+    c = TestClient(app)
+    assert DEV_CRON
+    ok = c.post("/api/cron/weekly-digest", headers={"Authorization": f"Bearer {DEV_CRON}"})
+    assert ok.status_code == 200 and ok.json()["accepted"] is True
+    assert c.post("/api/cron/weekly-digest",
+                  headers={"Authorization": "Bearer nope"}).status_code in (401, 429)
+
+
+def test_cron_run_weekly_digest_direct():
+    from app.routers.cron import run_weekly_digest
+    res = run_weekly_digest()
+    assert "approvals_by_status" in res
+    assert "audit_events_added" in res
+    assert res["window_days"] == 7
 
 
 def test_cron_rate_limit_429():
