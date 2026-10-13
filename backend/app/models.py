@@ -253,3 +253,14 @@ class ExecutionQueueItem(Base):
     enqueued_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
     enqueued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class SavedAuditFilter(Base):
+    """User-saved, optionally shared audit-log filter presets."""
+    __tablename__ = "saved_audit_filters"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    owner_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    query: Mapped[dict] = mapped_column(JSONB, default=dict)
+    shared: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

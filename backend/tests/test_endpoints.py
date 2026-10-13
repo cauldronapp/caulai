@@ -232,6 +232,29 @@ def test_dashboard_analytics():
     assert as_role(NOROLE).get("/api/dashboard/analytics").status_code == 403
 
 
+def test_dashboard_analytics_range_and_export():
+    admin = as_role(ADMIN)
+    r = admin.get("/api/dashboard/analytics", params={"days": 7})
+    assert r.status_code == 200 and r.json()["days"] == 7
+    exp = admin.get("/api/dashboard/export")
+    assert exp.status_code == 200 and exp.headers["content-type"].startswith("text/csv")
+    assert "pending_approvals" in exp.text
+    assert as_role(NOROLE).get("/api/dashboard/export").status_code == 403
+
+
+def test_audit_saved_filters():
+    admin = as_role(ADMIN)
+    created = admin.post("/api/audit/filters",
+                         json={"name": "My View", "query": {"q": "login"}, "shared": True})
+    assert created.status_code == 200
+    fid = created.json()["id"]
+    assert created.json()["owned"] is True
+    lst = admin.get("/api/audit/filters")
+    assert lst.status_code == 200 and any(f["id"] == fid for f in lst.json())
+    assert admin.delete("/api/audit/filters/does-not-exist").status_code == 404
+    assert admin.delete(f"/api/audit/filters/{fid}").json()["deleted"] is True
+
+
 # ===================== recommendations =====================
 def _create_rec(client, tier="auto", risk="low", payload=None):
     payload = payload or {"k": uuid.uuid4().hex}

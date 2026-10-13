@@ -75,6 +75,12 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Deployment readiness scan: PASS (no blockers; CORS auto-updated at deploy; Postgres self-hosted in-container — fresh prod DB seeds via idempotent guards).
 - Executive acceptance certificate PDF generated: `docs/PHASE_1A_ACCEPTANCE_CERTIFICATE.pdf`.
 
+## Audit filters + dashboard range/export (2026-06)
+- **Saved Audit Filters**: `saved_audit_filters` table (migration `e1f2a3b4c5d6`) + `GET/POST/DELETE /api/audit/filters` (gated `audit:list`, owner-scoped delete, optional shared); Audit page "+ Save view" bar.
+- **Dashboard Date Range**: `/api/dashboard/analytics?days=7|30|90`; frontend range selector.
+- **Export Dashboard**: `GET /api/dashboard/export` (CSV) + client print-to-PDF button.
+- 129 tests, **100% coverage maintained**. Verified via screenshots.
+
 ## Dashboard analytics (2026-06)
 - Added `GET /api/dashboard/analytics` (gated by `dashboard:read`): recommendations/approvals/executions grouped by status/tier + audit events/day. Frontend `DashboardAnalytics.jsx` renders recharts line/bar charts on the dashboard. 127 tests, **100% coverage maintained**.
 - Note: a transient pod/supervisor+Postgres outage occurred during this session and was recovered via `supervisord`; structured JSON logging + `X-Request-ID` confirmed working in backend logs.

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Download, ShieldCheck, RefreshCw } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -32,6 +32,25 @@ export default function Audit() {
       URL.revokeObjectURL(url);
     },
   });
+
+  const qc = useQueryClient();
+  const filters = useQuery({
+    queryKey: ["audit-filters"],
+    queryFn: async () => (await api.get("/audit/filters")).data,
+  });
+  const saveFilter = useMutation({
+    mutationFn: async () => {
+      const name = window.prompt("Name this view:");
+      if (!name) return null;
+      return (await api.post("/audit/filters", { name, query: { q: query }, shared: false })).data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audit-filters"] }),
+  });
+  const deleteFilter = useMutation({
+    mutationFn: async (id) => (await api.delete(`/audit/filters/${id}`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["audit-filters"] }),
+  });
+  const applyFilter = (f) => { const nq = f.query?.q || ""; setQ(nq); setQuery(nq); };
 
   const v = verify.data;
 
@@ -79,6 +98,16 @@ export default function Audit() {
           </div>
           <button data-testid="audit-search-button" onClick={() => setQuery(q)} className="rounded-md bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700">Search</button>
           {query && <button data-testid="audit-clear-search" onClick={() => { setQ(""); setQuery(""); }} className="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white">Clear</button>}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2" data-testid="saved-filters-bar">
+          <button data-testid="save-filter-button" onClick={() => saveFilter.mutate()} className="rounded-md border border-indigo-500/40 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-200 hover:bg-indigo-500/20">+ Save view</button>
+          {filters.data?.map((f) => (
+            <span key={f.id} data-testid={`saved-filter-${f.id}`} className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs text-slate-200">
+              <button onClick={() => applyFilter(f)} className="hover:text-white">{f.name}{f.shared ? " · shared" : ""}</button>
+              {f.owned && <button data-testid={`delete-filter-${f.id}`} onClick={() => deleteFilter.mutate(f.id)} aria-label={`Delete ${f.name}`} className="text-slate-500 hover:text-rose-300">×</button>}
+            </span>
+          ))}
         </div>
 
         {events.isLoading && <Loading testid="audit-loading" />}

@@ -5,9 +5,10 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from ..database import get_db
-from ..models import AuditEvent, AuditCheckpoint, User
+from ..models import AuditEvent, AuditCheckpoint, SavedAuditFilter, User
 from ..deps import require_permission
 from ..audit import verify_chain, create_checkpoint
 from ..canonical import canonical_json
@@ -87,3 +88,46 @@ def export_csv(fmt: str = Query(default="csv"), db: Session = Depends(get_db),
         return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv",
                                  headers={"Content-Disposition": "attachment; filename=caul_audit_export.csv"})
     raise HTTPException(status_code=422, detail="Unsupported format")
+
+
+class SavedFilterIn(BaseModel):
+    name: str
+    query: dict = {}
+    shared: bool = False
+
+
+def _serialize_filter(f: SavedAuditFilter, user: User) -> dict:
+    return {"id": f.id, "name": f.name, "query": f.query, "shared": f.shared,
+            "owned": f.owner_id == user.id, "created_at": f.created_at.isoformat()}
+
+
+@router.get("/filters")
+def list_filters(db: Session = Depends(get_db),
+                 user: User = Depends(require_permission("audit:list"))):
+    rows = db.execute(
+        select(SavedAuditFilter)
+        .where(or_(SavedAuditFilter.owner_id == user.id, SavedAuditFilter.shared.is_(True)))
+        .order_by(SavedAuditFilter.created_at.desc())
+    ).scalars().all()
+    return [_serialize_filter(f, user) for f in rows]
+
+
+@router.post("/filters")
+def create_filter(body: SavedFilterIn, db: Session = Depends(get_db),
+                  user: User = Depends(require_permission("audit:list"))):
+    f = SavedAuditFilter(owner_id=user.id, name=body.name, query=body.query, shared=body.shared)
+    db.add(f)
+    db.commit()
+    db.refresh(f)
+    return _serialize_filter(f, user)
+
+
+@router.delete("/filters/{fid}")
+def delete_filter(fid: str, db: Session = Depends(get_db),
+                  user: User = Depends(require_permission("audit:list"))):
+    f = db.get(SavedAuditFilter, fid)
+    if f is None or f.owner_id != user.id:
+        raise HTTPException(status_code=404, detail="not found")
+    db.delete(f)
+    db.commit()
+    return {"deleted": True}
