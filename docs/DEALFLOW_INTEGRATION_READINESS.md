@@ -139,5 +139,10 @@ Only the **public** site (https://dealflowos.app) was observed. Treat everything
 
 ---
 
+## 8. CAUL AI-side consumer spec (pre-specified)
+The exact CAUL AI implementation — secret names (`DEALFLOW_API_BASE_URL`, `DEALFLOW_API_KEY`, `DEALFLOW_TENANT`), the new `metrics:read` permission + `DealFlow Metrics Reader` service role, the `DealFlowMetricsConnector` (read-only, contract-gated), the `dealflow_metrics` table, the scheduled pull, the `connector:dealflow` kill switch, the read API/UI, the file-change checklist, and the 100%-coverage test plan — is pre-specified in **`docs/DEALFLOW_CAUL_CONSUMER_SPEC.md`**. It is specification only; no live code is changed until Phase 1 is approved.
+
+---
+
 ## STOP — Phase 0 complete
 Per the brief, **work stops here.** No code in either app was modified; nothing was deployed; no spend incurred. Requesting **written approval** (and the access in §7) before any limited, staging-only Phase 1 connector work begins.
