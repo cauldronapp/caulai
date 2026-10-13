@@ -62,5 +62,9 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Scheduled audit-verification cron + off-box checkpoint export.
 - Formal per-page axe accessibility report attachment (CI job exists).
 
+## Phase 1A — FINAL ACCEPTANCE
+- **Status: ACCEPTED** by user (written approval granted 2026-06). Phase 1A closed.
+- Verification at acceptance: 44/44 pytest green; security remediations (CORS/CSRF/rate-limit/BOLA/cron HMAC) verified; audit chain verifying clean; all Command Center pages live (WCAG 2.1 AA).
+
 ## Next tasks
-Await FINAL Phase 1A acceptance. Do not begin Phase 1B (Auth0, staging infra, live connectors, external integrations) without separate written approval.
+Phase 1A is CLOSED and ACCEPTED. Do NOT begin Phase 1B (Auth0, staging infra, live connectors, off-box export, external integrations) without separate explicit written approval. Stand by for Phase 1B go-ahead.
