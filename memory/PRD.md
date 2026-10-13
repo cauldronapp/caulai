@@ -75,6 +75,10 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Deployment readiness scan: PASS (no blockers; CORS auto-updated at deploy; Postgres self-hosted in-container — fresh prod DB seeds via idempotent guards).
 - Executive acceptance certificate PDF generated: `docs/PHASE_1A_ACCEPTANCE_CERTIFICATE.pdf`.
 
+## Dashboard analytics (2026-06)
+- Added `GET /api/dashboard/analytics` (gated by `dashboard:read`): recommendations/approvals/executions grouped by status/tier + audit events/day. Frontend `DashboardAnalytics.jsx` renders recharts line/bar charts on the dashboard. 127 tests, **100% coverage maintained**.
+- Note: a transient pod/supervisor+Postgres outage occurred during this session and was recovered via `supervisord`; structured JSON logging + `X-Request-ID` confirmed working in backend logs.
+
 ## Phase 1B prep & production hardening (2026-06)
 - **Production hardening (no external spend):** added `/api/health/ready` readiness probe (DB + seed state), structured **JSON logging** with per-request `X-Request-ID` correlation middleware. 126 tests, **100% coverage maintained**; `/api/health/ready` whitelisted in route-coverage.
 - **Auth0 pre-connection dossier** (`docs/PHASE_1B_AUTH0_DOSSIER.md/.pdf`): exact resources/keys, SDK versions, codebase mapping (RBAC stays in Postgres; Auth0 = identity only, behind `AUTH_PROVIDER` flag with stub rollback), migration/cutover plan, test matrix, and the approval/values needed before any connection. ExecOwner identity = **sean.gaden@gmail.com**. NOTHING connected/wired — awaits written approval.

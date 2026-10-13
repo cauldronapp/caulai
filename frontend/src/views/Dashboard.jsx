@@ -6,6 +6,7 @@ import {
 import { api } from "@/lib/api";
 import { Layout } from "@/components/Layout";
 import { PageHeader, Card, Loading, ErrorState } from "@/components/primitives";
+import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 
 function Stat({ icon: Icon, label, value, tone = "slate", to, testid }) {
   const tones = {
@@ -83,6 +84,8 @@ export default function Dashboard() {
                 <p className="mt-3 text-sm text-slate-400">No live connectors in Phase 1A. No credential fields exposed.</p>
               </Card>
             </div>
+
+            <DashboardAnalytics />
           </>
         )}
       </div>

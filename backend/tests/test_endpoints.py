@@ -222,6 +222,16 @@ def test_dashboard_ok():
     assert r.status_code == 200 and "pending_approvals" in r.json()
 
 
+def test_dashboard_analytics():
+    r = as_role(ADMIN).get("/api/dashboard/analytics")
+    assert r.status_code == 200
+    j = r.json()
+    for k in ["recommendations_by_status", "recommendations_by_tier",
+              "approvals_by_status", "executions_by_status", "audit_daily"]:
+        assert k in j and isinstance(j[k], list)
+    assert as_role(NOROLE).get("/api/dashboard/analytics").status_code == 403
+
+
 # ===================== recommendations =====================
 def _create_rec(client, tier="auto", risk="low", payload=None):
     payload = payload or {"k": uuid.uuid4().hex}
