@@ -11,7 +11,7 @@ from itertools import product
 # ---- Complete resource x action matrix ----
 RESOURCES = [
     "dashboard", "recommendation", "approval", "audit", "policy", "connector",
-    "emergency", "user", "role", "setting", "notification", "session",
+    "emergency", "user", "role", "setting", "notification", "session", "usage",
 ]
 ACTIONS = [
     "read", "list", "create", "update", "delete",
@@ -68,6 +68,9 @@ PERMISSION_CATALOG: dict[str, str] = {
     "notification:list": "List notifications",
     "notification:read": "Read a notification",
     "notification:update": "Mark notifications read",
+    # usage measurement (DEV-ONLY Stage-1 value instrumentation; synthetic data)
+    "usage:read": "Read aggregated usage/value metrics",
+    "usage:purge": "Purge usage data for a tenant or account (deletion requests)",
 }
 
 # Permissions considered high-risk for approval safeguards (self-approval forbidden, quorum).
@@ -156,6 +159,12 @@ for _r in ("Admin", "Marketing Manager", "Developer", "Security/Compliance", "An
 ROLE_PERMISSIONS["Admin"].update({"recommendation:execute", "connector:test"})
 ROLE_PERMISSIONS["Security/Compliance"].update({"connector:test"})
 ROLE_PERMISSIONS["Developer"].update({"connector:test"})
+# Usage/value measurement (dev-only): read for analytics roles; purge is admin-only + high-risk.
+for _r in ("Admin", "Security/Compliance", "Analyst", "Auditor"):
+    ROLE_PERMISSIONS[_r].add("usage:read")
+ROLE_PERMISSIONS["Admin"].add("usage:purge")
+HIGH_RISK_PERMISSIONS.add("usage:purge")
+SERVICE_IDENTITY_FORBIDDEN.add("usage:purge")
 # ExecOwner is set(ALL_PERMS) computed above and already includes the new permissions.
 
 

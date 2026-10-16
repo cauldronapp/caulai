@@ -33,3 +33,4 @@ They can never reach a production path (no production environment exists in Phas
 - Default-deny: any route requires an explicit permission; `norole@example.invalid` should get 403.
 - Service identity (`agent-service@example.invalid`) cannot log in interactively (403 by design).
 - PostgreSQL is the system of record. No MongoDB.
+- Usage measurement (dev-only): `usage:read` held by Admin/Security/Analyst/Auditor (+ExecOwner); `usage:purge` is Admin/ExecOwner only (high-risk). `GET /api/usage/metrics`, `POST /api/usage/purge`. Data is synthetic only.

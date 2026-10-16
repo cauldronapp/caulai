@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    String, Boolean, Integer, BigInteger, Text, DateTime, ForeignKey,
+    String, Boolean, Integer, BigInteger, Text, DateTime, Float, ForeignKey,
     UniqueConstraint, Index,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -264,4 +264,78 @@ class SavedAuditFilter(Base):
     query: Mapped[dict] = mapped_column(JSONB, default=dict)
     shared: Mapped[bool] = mapped_column(Boolean, default=False)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+# ----- Usage measurement (DEV-ONLY Stage-1 value instrumentation; synthetic data) -----
+# Append-only. No free-text fields; no PII/message content. Refs are pseudonymous,
+# generated server-side, scoped per (tenant, product) with no cross-product linkage.
+
+class UsageEvent(Base):
+    __tablename__ = "usage_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)  # event_id
+    event_type: Mapped[str] = mapped_column(String(48), index=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+    env: Mapped[str] = mapped_column(String(16))
+    schema_version: Mapped[int] = mapped_column(Integer, default=1)
+    workflow_type: Mapped[str] = mapped_column(String(48), index=True)
+    workflow_run_id: Mapped[str] = mapped_column(String(36), index=True)
+    actor_type: Mapped[str] = mapped_column(String(16))
+    actor_id: Mapped[str] = mapped_column(String(96))  # service identity label, never PII
+    account_ref: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    tenant_ref: Mapped[str] = mapped_column(String(64), index=True)
+    product_ref: Mapped[str] = mapped_column(String(64), index=True)
+    cohort: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    attribution: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    result: Mapped[str] = mapped_column(String(16), default="n/a")
+    error_class: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    model_ref: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    tokens_in: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tokens_out: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tokens_cached: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    work_unit_type: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    work_units: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    est_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
+    latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cache_hit: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    approval_gate: Mapped[str | None] = mapped_column(String(48), nullable=True)
+    decision: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    decision_latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    outcome_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    outcome_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    handling_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class UsageAggregate(Base):
+    """De-identified daily roll-up. account_ref is intentionally dropped here:
+    once aggregated, an individual contribution cannot be removed."""
+    __tablename__ = "usage_aggregates"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    day: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD
+    workflow_type: Mapped[str] = mapped_column(String(48))
+    tenant_ref: Mapped[str] = mapped_column(String(64), index=True)
+    product_ref: Mapped[str] = mapped_column(String(64))
+    cohort: Mapped[str] = mapped_column(String(16), default="")
+    n_events: Mapped[int] = mapped_column(Integer, default=0)
+    metrics: Mapped[dict] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (
+        UniqueConstraint("day", "workflow_type", "tenant_ref", "product_ref", "cohort",
+                         name="uq_usage_aggregate_group"),
+    )
+
+
+class ModelCostRate(Base):
+    """Configurable, provider-sourced AI token rates. $CAUL market price is NEVER a cost input."""
+    __tablename__ = "model_cost_rates"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    model_ref: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    provider: Mapped[str] = mapped_column(String(48))
+    currency: Mapped[str] = mapped_column(String(8), default="USD")
+    rate_input_per_1k: Mapped[float] = mapped_column(Float, default=0.0)
+    rate_output_per_1k: Mapped[float] = mapped_column(Float, default=0.0)
+    rate_cached_input_per_1k: Mapped[float] = mapped_column(Float, default=0.0)
+    source_url: Mapped[str] = mapped_column(String(255), default="")
+    effective_date: Mapped[str] = mapped_column(String(10), default="")  # YYYY-MM-DD
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

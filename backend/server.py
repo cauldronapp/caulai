@@ -21,7 +21,7 @@ from app.config import get_app_env, get_chain_env, get_chain_org
 from app.database import get_db, engine
 from app.routers import (
     auth, dashboard, recommendations, approvals, audit, emergency, admin, system,
-    notifications, admin_manage, cron,
+    notifications, admin_manage, cron, usage,
 )
 
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
@@ -131,5 +131,5 @@ def readiness(db: Session = Depends(get_db)):
     )
 
 
-for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, admin_manage, system, notifications, cron):
+for r in (auth, dashboard, recommendations, approvals, audit, emergency, admin, admin_manage, system, notifications, cron, usage):
     app.include_router(r.router)

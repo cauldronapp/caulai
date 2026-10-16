@@ -17,6 +17,7 @@ from ..config import get_runtime_database_url, get_chain_org, get_cron_secret
 from ..database import SessionLocal
 from ..models import Approval, AuditEvent, PauseState, Notification
 from ..audit import verify_chain, create_checkpoint, append_event
+from ..usage import run_retention as _usage_run_retention
 from ..ratelimit import limiter
 
 logger = logging.getLogger("caul.cron")
@@ -155,7 +156,28 @@ async def weekly_digest(request: Request, background: BackgroundTasks):
     return {"accepted": True, "digest": "weekly-governance"}
 
 
+def run_usage_retention() -> dict:
+    """Roll up + expire DEV-ONLY usage measurement data for the running environment."""
+    db = SessionLocal()
+    try:
+        return _usage_run_retention(db)
+    except Exception:  # pragma: no cover  (never crash the scheduler)
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+@router.post("/usage-retention")
+async def usage_retention(request: Request, background: BackgroundTasks):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    _require_cron_auth(request, "/api/cron/usage-retention")
+    background.add_task(run_usage_retention)
+    return {"accepted": True, "job": "usage-retention"}
+
+
 # Marker recognised by the CI route-permission coverage test: HMAC/webhook-authenticated
 # (per-env cron secret), intentionally not RBAC-gated. Applies to all cron endpoints.
 verify_audit.caul_webhook_auth = True
 weekly_digest.caul_webhook_auth = True
+usage_retention.caul_webhook_auth = True

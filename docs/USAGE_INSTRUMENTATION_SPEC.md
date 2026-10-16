@@ -97,6 +97,16 @@ Computed over a chosen window per `workflow_type`, per `account_ref`, per `tenan
 - **Dev-only isolation:** this layer exists **only** in the development environment for this spec; staging/production are untouched. No external telemetry vendor.
 - **Consent/lawful-basis:** because Stage 1 uses internal/synthetic data only, no customer consent flow is exercised here; any future real-data use is gated by `CLIENT_OPERATIONS_AND_PRIVACY_SPEC.md` + counsel review.
 
+## 6a. Aggregation is irreversible at the individual level + deletion handling [PRIVACY]
+**Caveat (must be understood before approving):** once `account_ref` is dropped during roll-up, an **individual's contribution cannot be removed from that aggregate** — the aggregate is de-identified and no longer linkable to a person. Deletion therefore has two distinct paths depending on timing:
+
+- **Before aggregation (raw still present):** a deletion request for a person/account is honored by **hard-deleting that account's raw events** (`purge_account_raw(account_ref)`) *before* they are rolled up. This fully removes the individual's row-level contribution. Because raw events expire at 30 days and roll-ups run daily, the window to delete an individual contribution is bounded (≈ up to 1 day until the next roll-up, up to 30 days until raw expiry).
+- **After aggregation (raw expired/rolled up):** the contribution exists only inside de-identified counts and **cannot be individually subtracted**. The only remaining lever is **tenant-wide purge** (below). This is an inherent, documented property of de-identified aggregation, not a defect.
+
+**Tenant-wide purge path:** `purge_tenant(tenant_ref)` hard-deletes **all raw events and all aggregates** for that tenant (both pre- and post-aggregation data), audited as `usage.tenant_purged`. This is the authoritative "remove everything for this tenant" control.
+
+**Deletion-request flow:** on a verified request, (1) immediately `purge_account_raw` to drop any still-raw contribution; (2) if tenant-level erasure is required, `purge_tenant`; (3) record the action in the governance audit chain. Requests that arrive after aggregation are answered honestly: row-level deletion is no longer possible, only tenant-wide purge.
+
 ## 7. Synthetic-data test plan (no real customer data)
 Validate the measurement layer end-to-end using **generated** data only:
 1. **Generator:** a dev fixture produces synthetic workflow runs across all 5 workflow types with controllable distributions (success/fail/abandon rates, token volumes, approval/override rates, baseline vs. assisted cohorts).

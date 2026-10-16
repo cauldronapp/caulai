@@ -111,5 +111,13 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Produced `/app/docs/USAGE_INSTRUMENTATION_DECISION_BRIEF.md`: recommended defaults for retention (30d raw / 24mo aggregates + hard-delete flow), per-(tenant,product) scoped pseudonymization with no cross-product linkage, observational attribution with labeling rule, configurable 3-rate model-cost table (input/output/cached) with source_url + effective_date ($CAUL price never a cost input), and PII safeguards (no free-text; what validation can/cannot detect; small-cell suppression n<5). Includes schema/event JSON examples.
 - Updated `DECISIONS_REQUIRED.md` §G with concrete defaults. **Documentation-only — no code until owner explicitly approves implementation.**
 
+## Usage measurement layer (dev-only) — implemented (2026-06-15)
+- Approved dev-only Stage-1 value-instrumentation layer built with **synthetic data only** (no real customer data, no external services, no billing, no staging/prod changes).
+- **Backend:** `usage_events` (append-only, PII-free), `usage_aggregates` (de-identified), `model_cost_rates` (configurable input/output/cached rates + source_url + effective_date; $CAUL price never a cost input). Migration `a1b2c3d4e5f6` (dev+staging) + grants applied.
+- `app/usage.py`: scoped server-side pseudonymous refs (per tenant+product, no cross-product linkage), `record_event` (controlled-vocab validation, no free-text), `compute_metrics` (AI cost/account, workflow success, support-time-saved, onboarding completion, renewal follow-up, conversion lift; observational labeling; small-cell suppression n<5), `rollup_aggregates`, `run_retention` (30d raw / 24mo aggregates, hard delete), `purge_tenant`, `purge_account_raw`.
+- `app/usage_synth.py`: deterministic synthetic generator with planted baseline-vs-assisted deltas.
+- Endpoints: `GET /api/usage/metrics` (`usage:read`), `POST /api/usage/purge` (`usage:purge`, admin-only/high-risk). Cron `POST /api/cron/usage-retention` (HMAC) + `.emergent/crons.yml` entry (daily 02:30).
+- **Tests:** 141 passing, **100% backend coverage maintained**. Spec updated with the "aggregation is irreversible at the individual level" caveat + tenant purge + pre-aggregation deletion.
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
