@@ -17,12 +17,10 @@ Introduce a real, explicit **`production`** environment in the configuration lay
 
 ### 2.1 Environment values
 - Extend the allowed set from `{dev, staging}` to `{dev, staging, production}` **[PROPOSED]**. `production` is a first-class value — **not** an alias of `dev`.
-- `APP_ENV` continues to drive selection; default remains `dev` (so an *unset* env never silently becomes production).
-
 ### 2.2 Required variable names (names only — no values here; not created by this doc)
 | Variable | Purpose | Notes |
 |---|---|---|
-| `APP_ENV` | Selects env (`dev`/`staging`/`production`) | Production must set `production` explicitly. |
+| `APP_ENV` | Selects env (`dev`/`staging`/`production`) | **Required in every deployed environment**; missing/unknown ⇒ fail-closed (no default). Local dev sets `dev` explicitly. |
 | `PROD_DATABASE_URL` | App (least-privilege) connection for production | **New.** Used ONLY when `APP_ENV=production`. |
 | `PROD_ADMIN_DATABASE_URL` | Owner/admin connection for prod migrations + grants | **New.** Never used by the running app. |
 | `PROD_DB_EXPECTED_NAME` | Expected production dbname for the identity guard | **New.** Suggested value `caul_prod` **[DECISION]**. |
@@ -39,7 +37,7 @@ Introduce a real, explicit **`production`** environment in the configuration lay
 ## 3. Fail-fast startup checks (production safety guards) [PROPOSED]
 Executed at application startup (before serving traffic). If **any** check fails, the app **refuses to start / refuses readiness** with a clear, non-secret error — it never boots into a broken or unsafe state.
 
-1. **Known env:** `APP_ENV ∈ {dev, staging, production}`; otherwise refuse.
+1. **Known env (fail-closed):** `APP_ENV` is **explicitly set** and ∈ `{dev, staging, production}`. A **missing** `APP_ENV` or an **unknown** value causes the app to **refuse to start / refuse readiness** — there is **no default to `dev`** in deployed environments. (Local development sets `APP_ENV=dev` explicitly via its launcher/`.env`.)
 2. **Required URL present:** the `*_DATABASE_URL` for the active env is set; otherwise refuse (no fallback).
 3. **Production host guard:** when `APP_ENV=production`, the resolved DB host must **not** be `localhost`/`127.0.0.1` (prevents the current dangling-localhost failure).
 4. **Production isolation guard:** when `APP_ENV=production`, the resolved `dbname` must **equal `PROD_DB_EXPECTED_NAME`** and must **not** be `caul_dev`/`caul_staging` (prevents accidental reuse of dev/staging).
@@ -82,10 +80,14 @@ Dev-only capabilities (the usage measurement layer: `/api/usage/*` and the `usag
 ## 5. Test / verification checklist (for the future dev-only implementation)
 All tests run **in dev only** when Stage B is approved; **100% backend coverage gate** must stay green. No staging/prod execution.
 
-**Environment resolution**
-- [ ] `APP_ENV=production` → `get_runtime_database_url` returns `PROD_DATABASE_URL`; **never** dev/staging. (Assert no fallback.)
-- [ ] Missing `PROD_DATABASE_URL` with `APP_ENV=production` → fail-fast error (no silent fallback).
-- [ ] `APP_ENV=dev`/`staging` behavior unchanged (regression).
+**Environment resolution (fail-closed; no implicit default)**
+- [ ] **Missing `APP_ENV`** (unset/empty) → fail-closed: `get_app_env()` raises and the app refuses to start/ready. (Asserts the old default-to-`dev` is gone.)
+- [ ] **Invalid `APP_ENV`** (e.g., `prod`, `production2`, `PROD`, random) → fail-closed: raises; no fallback to any env.
+- [ ] **`APP_ENV=dev`** (explicit) → resolves `DEV_DATABASE_URL`; usage layer may be enabled (see flags).
+- [ ] **`APP_ENV=staging`** (explicit) → resolves `STAGING_DATABASE_URL`; usage layer forced off.
+- [ ] **`APP_ENV=production`** (explicit) → resolves `PROD_DATABASE_URL`; **never** dev/staging (assert no fallback); usage layer forced off.
+- [ ] Missing `PROD_DATABASE_URL` with `APP_ENV=production` → fail-fast error (no silent fallback to dev/staging).
+- [ ] Missing `DEV_DATABASE_URL`/`STAGING_DATABASE_URL` with their explicit env → fail-fast (regression; no cross-fallback).
 
 **Fail-fast guards** (simulated via config inputs; no real prod DB)
 - [ ] Unknown `APP_ENV` → refuses.
@@ -130,6 +132,18 @@ All tests run **in dev only** when Stage B is approved; **100% backend coverage 
 > **Constraints:** production release freeze in place. Do **not** deploy, redeploy, change secrets, or provision/modify any database while answering. We will not share secret values; sanitized host/dbname confirmations suffice.
 
 ---
+
+## 7a. Platform-support request — release path & source integrity (DRAFT TEXT — do not send)
+> **To:** Emergent Platform Support — **Subject:** CAUL AI (`caul-impl-gate`) — prevent secret-change rebuilds of unapproved preview source; pin releases to an identifiable artifact
+>
+> **Incident reference (no secret values):** production deployment **`994120f4-929a-41c2-a895-093d4fd242e8`** was a **redeploy triggered by a secret change** and built from the preview pod `/app` with **no Git SHA** (the pipeline excludes `.git`). Its only build identity was the image digest **`sha256:0721b61546cfa269a3b9b226491046774de56b56a292b05bbc7bf9cf25c6b5d4`**. This means a secret edit can silently promote whatever happens to be in the preview pod, and we cannot name the exact source a release contains.
+>
+> **Questions / requests:**
+> 1. **Stop secret-change from rebuilding source:** How can we prevent a `secret_change` event from triggering a rebuild/redeploy of the current preview-pod source? Can that trigger be **disabled**, or configured to **reuse the last approved/released image** (apply the new secret to the existing image without rebuilding)?
+> 2. **Pin each release to an identifiable source artifact:** Since `.git` is excluded, what is the supported way to tie each production release to a **durable, human-identifiable source identifier** (e.g., a tagged/versioned build artifact with a recorded content hash and release label), so we can state exactly what is live, diff two releases, and roll back to a known artifact — using the image digest as the anchor if that is the canonical identifier?
+> 3. **Release gate:** Can production deploy/redeploy require **manual approval** plus a pre-deploy summary (pending DB migrations, `.emergent/crons.yml` changes, new API routes), so nothing is promoted without sign-off?
+>
+> **Constraints:** We have a production release freeze in place. Please do **not** deploy, redeploy, rotate secrets, or change any database while answering. We will not share secret values; sanitized confirmations are sufficient.
 
 ## 8. Decisions needed to proceed to a dev-only Stage B build
 1. Approve adding a first-class `production` env + `PROD_DATABASE_URL`/`PROD_ADMIN_DATABASE_URL` with **no** dev/staging fallback.
