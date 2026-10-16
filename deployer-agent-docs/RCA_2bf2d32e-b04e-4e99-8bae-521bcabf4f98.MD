@@ -1,47 +1,49 @@
-# Read-Only Incident Report — CAUL AI (caul-impl-gate)
+# RCA — caul-impl-gate (CAUL AI Command Center)
 
-**Mode:** Diagnosis only. No deploy, redeploy, pause, cancel, or production change was performed.
+Read-only diagnosis. No changes made. No secret values exposed (credentials masked throughout).
 
-## 1. Deployment / Job ID of today's deployment
-- **Deployment ID:** `994120f4-929a-41c2-a895-093d4fd242e8` (name: `caul-impl-gate`)
-- **Today's run (2026-10-16):** `run_id = 2bf2d32e-b04e-4e99-8bae-521bcabf4f98`
-- **Job ID:** `cecc1265-925c-45b5-a43d-6a83ddc65df1` (shared across all runs of this deployment)
-- **Type / trigger:** `redeploy`, triggered by `secret_change` (not a code change)
+Active run inspected: `2bf2d32e-b04e-4e99-8bae-521bcabf4f98` (redeploy, status success, serving traffic). Frontend: cloudflare. Template: fastapi_react_mongo_shadcn_base_image.
 
-## 2. Target environment
-- **PRODUCTION.** Live URL `https://caul-impl-gate.emergent.host`; custom domains `caul.ai` and `www.caul.ai` (both verified). Deployment status `active`, frontend served via Cloudflare. This is not preview/staging.
+## 1. APP_ENV in production runtime
+**APP_ENV = `dev`** (not a secret). Confirmed two ways:
+- `list_secrets equals {APP_ENV:"dev"}` → `matches_expected: true`.
+- `app/config.py:get_app_env()` defaults to `dev` when unset; only `dev`/`staging` are permitted (production guard raises otherwise).
 
-## 3. Current status
-- **COMPLETED — SUCCESS.** Run created `2026-10-16T04:08:51Z`, completed `2026-10-16T04:14:10Z`.
-- There is **no queued or in-progress run**. Nothing is currently running.
-- **It cannot be paused/cancelled** — it already reached a terminal success state and is the active, serving run.
+## 2. Which PostgreSQL connection the running app uses
+Resolution logic (`app/config.py:get_runtime_database_url` → `app/database.py:engine`):
+`DEV_DATABASE_URL` when `APP_ENV=="dev"`, else `STAGING_DATABASE_URL`.
 
-## 4. Source git revision
-- **No git commit SHA is recoverable.** The pipeline pulls source from the preview pod filesystem (`/app`) and excludes `.git` — no git ref is recorded for the build (confirmed: no `.git` in the pulled source).
-- Build identity available instead:
-  - Image digest: `sha256:0721b61546cfa269a3b9b226491046774de56b56a292b05bbc7bf9cf25c6b5d4`
-  - Base image: `fastapi_react_mongo_shadcn_base_image_cloud_arm:release-20092026-1`
+With APP_ENV=`dev`, the app resolves to **`DEV_DATABASE_URL`**.
 
-## 5. Are the two specific changes live?
+Both are set in production (neither empty). Production values match the source `.env` exactly (`matches_expected: true` for both via `list_secrets equals`). Sanitized identifiers (credentials masked):
+- **DEV_DATABASE_URL (RESOLVED/ACTIVE): host=`localhost` (127.0.0.1), port=`5432`, dbname=`caul_dev`**
+- STAGING_DATABASE_URL: host=`localhost` (127.0.0.1), port=`5432`, dbname=`caul_staging`
+- (Admin URLs DEV_ADMIN/STAGING_ADMIN likewise point at localhost:5432, dbname caul_dev / caul_staging — used only for migrations, not by the running app.)
 
-### (a) Alembic migration `a1b2c3d4e5f6` ("usage instrumentation") — NOT LIVE, NOT PRESENT
-- The migration `a1b2c3d4e5f6` **does not exist** in the deployed source. The complete Alembic version chain present is:
-  `04fa0e699dc6` (initial) → `0abdc53a92e5` → `d88e3be3f8b8` → `e1f2a3b4c5d6` → **`f2b3c4d5e6f7` (HEAD)**.
-- Tables `usage_events`, `usage_aggregates`, `model_cost_rates` are **not defined** anywhere in `backend/app/models.py` (18 tables defined; none usage-related).
-- `/api/usage/summary` live probe → **404 Not Found**. No `/api/usage/*` routes or usage router exist in the source.
-- **Additional critical finding:** The source is a **PostgreSQL / SQLAlchemy / Alembic** app (models.py: "PostgreSQL system-of-record... No MongoDB"). However, the platform-provisioned production database is **MongoDB** (`caul-impl-gate-base`, **0 collections**). The platform does not provision PostgreSQL for this template (`fastapi_react_mongo_shadcn_base_image`). Regardless of where Postgres runs, the usage migration is simply not in the deployed code, so it is not live.
+## 3. Production DB name + shared vs separate
+- Production dbname = **`caul_dev`** (the dev database name). It is **NOT** a distinct, dedicated production database. `caul_staging` is the staging name.
+- Host/instance: **dev and staging point at the SAME host/instance** — both `localhost:5432` — differing only by dbname. There is **no separate production PostgreSQL instance**. The code explicitly states "There is NO production environment" (config.py docstring / production guard).
+- Important nuance: `localhost:5432` was the preview pod's local PostgreSQL (the repo even carries a `postgres_data/` dir from that local instance). In the production pod there is no PostgreSQL process, so this URL does not actually reach any live dev/staging database — it reaches nothing (see #4).
+- The platform-provisioned MongoDB (`caul-impl-gate-base`, 0 collections) is **unused** by this app, as expected — the app is PostgreSQL-only.
 
-### (b) `usage-retention` cron (`POST /api/cron/usage-retention`) — NOT REGISTERED, NOT PRESENT
-- `.emergent/crons.yml` contains exactly **two** crons, neither is usage-retention:
-  - `audit-verify` → `/api/cron/verify-audit` (`*/30 * * * *`)
-  - `weekly-governance-digest` → `/api/cron/weekly-digest` (`0 13 * * 1`, Mondays 13:00 UTC)
-- The cron router (`backend/app/routers/cron.py`) exposes only `/verify-audit` and `/weekly-digest`. There is **no** `usage-retention` route.
-- `/api/cron/usage-retention` live probe → **404 Not Found**. Since the endpoint does not exist, it **cannot have run** in production.
+## 4. Root cause of 500 on /api/health and /api/health/ready
+**The backend cannot connect to its PostgreSQL database because the resolved DB URL points at `localhost:5432`, and no PostgreSQL server runs inside the production pod.**
 
-### Requested extra confirmation of what IS live
-- **Alembic head in source:** `f2b3c4d5e6f7` (saved_filter_is_default).
-- **`/api/usage/*` routes:** absent (404 in prod).
-- **Cron registrations in prod `crons.yml`:** `audit-verify` and `weekly-governance-digest` only. The **weekly-digest** cron IS registered (as `weekly-governance-digest` → `/api/cron/weekly-digest`). The **usage-retention** cron is NOT registered.
+Verified error from production backend logs (run 2bf2d32e), on both endpoints:
+```
+sqlalchemy.exc.OperationalError: (psycopg.OperationalError) connection failed:
+connection to server at "127.0.0.1", port 5432 failed: Connection refused
+  File "/app/backend/server.py", line 116, in health
+```
+- `/api/health` executes `SELECT 1` / `SELECT current_database()`; `/api/health/ready` executes `SELECT COUNT(*) FROM permissions`. Both open a DB connection via the engine bound to `DEV_DATABASE_URL` (localhost:5432) → connection refused → unhandled → HTTP 500.
+- `GET /` returns 200 because it is the static frontend (served via Cloudflare/R2), which touches no database.
+- This is NOT a missing env var (all DB URLs are present and non-empty) and NOT a MongoDB issue. It is a DB URL that targets a local PostgreSQL that does not exist in production.
+- `preview_health_check`: `/api/health` → 500, `/api/health/ready` → 500, `/` → 200 (matches report).
+- Note: `/health` (no `/api` prefix) returns 404 by design — the app only defines `/api/health*`; the pod's probe hitting `/health` is harmless noise.
 
-## Conclusion
-Today's production redeploy (`2bf2d32e…`, trigger `secret_change`) completed successfully ~04:14 UTC and is the active serving run; there is nothing in progress to pause or cancel. **Neither** the `a1b2c3d4e5f6` usage-instrumentation migration **nor** the `usage-retention` cron is present in the source that built the live image, and both corresponding live endpoints return 404 — so neither change is live in production. They were never part of the deployed revision (likely never committed/merged into the deployed source, or they live on an un-deployed branch).
+## Suggested fixes (NOT applied — release freeze respected)
+1. USER (Secrets): In Deployment Panel → Secrets, set `DEV_DATABASE_URL` (and `STAGING_DATABASE_URL`/admin URLs if used in prod) to a PostgreSQL instance that is reachable from the production pod — i.e. an external/managed Postgres host, not `localhost`. Then redeploy. The current values are the preview pod's local Postgres, which has no server in production.
+2. USER/third-party: Provision (or point to) a real managed PostgreSQL for this deployment and create the `caul_dev` (and/or `caul_staging`) database + run migrations/seed there. The provisioned MongoDB is unused and can be ignored.
+3. Architectural note (for E1/owner, not required to clear the 500): the app has no "production" env concept — in prod it runs as `APP_ENV=dev` against `caul_dev`. If dev/staging are meant to stay isolated from production, a dedicated prod database/instance and a corresponding APP_ENV policy would be needed. This is a design decision, not the cause of the current 500.
+
+Nothing was changed. No deploy, no secret edits, no migrations.
