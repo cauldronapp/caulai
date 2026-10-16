@@ -35,6 +35,10 @@
 ## G. Autonomy limits
 16. **[DECISION]** Confirm the human-approval list for AI actions (sensitive comms, refunds, account suspension/deletion, pricing/entitlement changes, any token tx/reward above a limit) and the pre-approved reward limit value.
 
+## G. Usage instrumentation (Stage 1 measurement)
+17. **[DECISION]** Approve a **development-only, $0** implementation of `USAGE_INSTRUMENTATION_SPEC.md` (synthetic data only; no real customer data; no external services; staging/production untouched)?  **[Approve / Hold]**
+18. **[DECISION]** Raw-event retention window (default ≤90 days in dev), pseudonymization method for account/tenant/product refs, baseline-vs-assisted attribution method, and token$/model rate assumptions for `est_cost_usd`.
+
 ---
 
 ### Cost summary for these decisions

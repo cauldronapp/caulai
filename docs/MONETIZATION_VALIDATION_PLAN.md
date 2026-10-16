@@ -10,6 +10,7 @@
 Prove, with evidence, that CAUL AI (a) delivers measurable internal value and (b) has an external SaaS offer with healthy unit economics — **before** implementing any billing or changing pricing.
 
 ## 2. Stage 1 — Internal value proof (lowest risk, $0 external)
+- **Instrumentation:** measured via the dev-only, $0 `USAGE_INSTRUMENTATION_SPEC.md` (event taxonomy, metric formulas, privacy/retention limits, synthetic-data test plan). Spec only until owner approves a dev-only implementation.
 - **Hypotheses:** CAUL AI reduces support time, lifts onboarding completion, lifts renewals, and improves cross-product conversion at acceptable AI cost/account.
 - **Method:** instrument internal usage; baseline vs. CAUL-assisted cohorts where feasible.
 - **Metrics:** support minutes/ticket, onboarding completion %, renewal rate, conversion lift, AI cost/account (from cost model).
