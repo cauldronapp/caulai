@@ -1,4 +1,5 @@
 import "@/App.css";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
@@ -20,7 +21,18 @@ import Settings from "@/views/Settings";
 
 const P = (el) => <ProtectedRoute>{el}</ProtectedRoute>;
 
+const APP_TITLE = "CAUL AI — Command Center";
+
 function App() {
+  useEffect(() => {
+    // The external platform script re-sets document.title after load; keep ours applied.
+    document.title = APP_TITLE;
+    const id = setInterval(() => {
+      if (document.title !== APP_TITLE) document.title = APP_TITLE;
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="App">
       <BrowserRouter>
