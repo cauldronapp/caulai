@@ -124,5 +124,10 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - **Reported a STATUS DISCREPANCY:** prior notes/artifacts say Phase 1A complete (certificate/report exist) while the master spec says Phase 0/Milestone 0 (docs only) is authorized. Did NOT infer acceptance. Current gate = Phase 0 documentation only; next gate = Sean's written reconciliation + approval.
 - **Documentation only — no code/DB/deploy/external/$ change; synthetic examples only.**
 
+## Launch prep — landing spec + launch readiness (2026-10-16, docs only)
+- Isolation could NOT be confirmed (this pod is the production-bound preview source), so per owner instruction NO app files/page/preview were built — delivered specs only: `/app/docs/LANDING_PAGE_PREVIEW_SPEC.md` and `/app/docs/LAUNCH_READINESS.md`.
+- Landing spec: honest now-vs-planned content; customer-login shown as "coming soon" (auth is a labeled stub + prod login 500s); "Request a pilot" as mailto to an owner-confirmed address only (no PII form); no $CAUL checkout/wallet/investment language.
+- Launch readiness: smallest credible fiat pilot (single SMB, one governed approval+audit workflow — the only verified capability), prices/features marked HYPOTHESIS, and DB/release blockers (no $0/no-account prod Postgres, stub auth, prod 500s, secret-triggered-redeploy, source pinning). Production frozen + frontend-only.
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
