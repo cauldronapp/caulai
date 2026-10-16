@@ -119,5 +119,10 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Endpoints: `GET /api/usage/metrics` (`usage:read`), `POST /api/usage/purge` (`usage:purge`, admin-only/high-risk). Cron `POST /api/cron/usage-retention` (HMAC) + `.emergent/crons.yml` entry (daily 02:30).
 - **Tests:** 141 passing, **100% backend coverage maintained**. Spec updated with the "aggregation is irreversible at the individual level" caveat + tenant purge + pre-aggregation deletion.
 
+## Client Acquisition Growth Engine — Phase 0 design (2026-10-16)
+- Produced `/app/docs/CLIENT_ACQUISITION_GROWTH_ENGINE_DESIGN.md`: roadmap design for an internal dogfooding engine to help Sean plan/manage client acquisition for cauldrontech.com (two separate audiences: founders needing product builds; small businesses automating a workflow). Covers scope/out-of-scope, roles, screens (planner, calendar/creative studio, approval queue, synthetic lead pipeline, exec dashboard), conceptual data + written flow, future read-only/aggregate website-measurement path, security/privacy/isolation, phased acceptance, and decisions for Sean.
+- **Reported a STATUS DISCREPANCY:** prior notes/artifacts say Phase 1A complete (certificate/report exist) while the master spec says Phase 0/Milestone 0 (docs only) is authorized. Did NOT infer acceptance. Current gate = Phase 0 documentation only; next gate = Sean's written reconciliation + approval.
+- **Documentation only — no code/DB/deploy/external/$ change; synthetic examples only.**
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
