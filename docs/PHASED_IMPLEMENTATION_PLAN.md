@@ -1,22 +1,45 @@
 # PHASED_IMPLEMENTATION_PLAN.md
-**Phase 0 — Milestones, estimates, prerequisites, explicit STOP gates.** Estimates are rough engineering ranges, not commitments; each phase starts only after its specific approval.
+**CAUL AI Ecosystem Integration — milestone plan & approval gates (Milestone 0 deliverable).**
+Supersedes the earlier phased plan for the ecosystem-integration track. **Each milestone ends at a STOP gate requiring owner approval.**
 
-| Phase | Outcome | Key prerequisites | Rough estimate | STOP gate (acceptance) |
-|---|---|---|---|---|
-| **0 (now)** | This discovery + 8 docs | CAUL AI access (have it) | — (done) | Exec reviews `PHASE0_EXECUTIVE_DECISION.md` |
-| **1** CAUL AI hardening | Production-grade identity (Auth0), re-verified RBAC/audit/a11y/secrets/CI/backup-restore/rollback | Auth0 staging values + MFA policy; close Phase 1A gates | ~1–2 wks | tests + threat model + audit evidence + sign-off |
-| **2** Deal Flow OS read-only | Connector in isolated staging; minimal approved DealFlow API; disabled-by-default | Authorized DealFlow audit + scoped staging token; both-owner sign-off | ~1–2 wks | reconciled metrics, zero leakage, zero uptime impact, tested kill switch |
-| **3** Multi-product growth intel | Exec dashboards + draft-only agents on approved aggregates | Baseline KPIs agreed; agent permission registry | ~2–3 wks | perf vs baselines; human gates for spend/publish/outreach |
-| **4** Utility Gateway prototype | Testnet/sandbox noncustodial wallet + quote/credit/reconciliation | **Legal review** + XRPL identity audit + budget | ~2–4 wks | security + abuse + reconciliation + regulatory sign-off |
-| **5** Single-product token pilot | One low-risk opt-in credit/discount use case | Validated demand; support/refund policy; caps | ~2–3 wks | unit economics, fraud controls, independent approvals |
-| **6** Customer AI + ecosystem | Per-product premium AI + optional gateway; evaluate Wars/SaaS | Per-product validation, consent, pricing | per product | separate per-product launch gates |
+> Legend: **[EXISTS]** · **[PROPOSED]** · **[DECISION]** · **[LEGAL]**. Constraints carried forward: **$0 spend**, **separate dev/staging**, **production untouched**, **no live wallet/keys**, **no secrets in chat/source** — unless the owner explicitly changes them in writing.
 
-## Recommended lowest-risk sequence
-1. **Phase 1 first** (unblocks everything; closes the stub-identity gap). 
-2. **Phase 2** (read-only DealFlow) — highest value, lowest blast radius, reuses existing connector primitives. 
-3. **Phase 3** growth dashboards once ≥1 real product feed exists. 
-4. Token work (4→5) only after legal + XRPL verification; keep strictly isolated. 
-5. Wars/future SaaS last.
+---
 
-## Cross-cutting prerequisites
-Versioned OpenAPI per connector; short-lived/least-privilege service creds + rotation/revocation/replay protection; signed webhooks (if used); metric dictionary w/ source+refresh+reconciliation; observability (tracing/error budgets/latency/incident playbooks); a11y+security regression gates; documented cost+permission per vendor.
+## Milestone 0 — Repo & environment audit + architecture/decision docs  ✅ (this deliverable)
+**Scope:** inspect CAUL AI; produce `ECOSYSTEM_INTEGRATION_ARCHITECTURE.md`, `CAUL_UTILITY_SERVICE_SPEC.md`, `CLIENT_OPERATIONS_AND_PRIVACY_SPEC.md`, `PRODUCT_ADAPTER_CONTRACT.md`, this plan, `SECURITY_AND_TEST_PLAN.md`, `DECISIONS_REQUIRED.md`.
+**No code changes.** 
+**Acceptance:** owner reviews docs; answers decisions in `DECISIONS_REQUIRED.md`.
+**Exit gate → M1:** owner approves the architecture + selects which decisions unblock M1.
+
+## Milestone 1 — Schemas, adapter interfaces, mocks, flags, tests (DEV ONLY) [PROPOSED]
+**Scope:** API schemas (`/v1` utility service + product adapter), interface stubs, **mock** implementations (no real product/token calls), feature flags, and automated tests — all in the **development** environment only. Reuse `BaseConnector`/`run_contract_suite`, default-deny RBAC, HMAC signing, tamper-evident audit. Maintain the **100% coverage gate**.
+**Hard constraints:** no cross-boundary access; no unresolved owner decision required; no staging/prod; no external accounts/spend; mock token flows only.
+**Acceptance:** contract-test suite green in dev; schemas reviewed; coverage 100%.
+**Exit gate → M2:** owner selects the pilot product + approves a non-production pilot.
+> **Current status:** NOT started. M1 may proceed in dev only **after** the owner approves M0 and confirms it needs no unresolved decision (e.g., auth method choice §DECISIONS 1–3). Until then: proposed changes only, wait at the gate.
+
+## Milestone 2 — Non-production pilot with ONE product (sandbox/mock) [PROPOSED]
+**Scope:** wire one owner-selected product's adapter in **staging** using sandbox/mock token flows and a product-issued read-only token. Aggregate-metrics pull + (optional) client-ops read, fully audited, kill-switch tested.
+**Hard constraints:** staging isolated; production untouched; sandbox/mock tokens only; no live wallet.
+**Acceptance:** end-to-end pull verified in staging; isolation + kill-switch + audit proven; privacy checks pass.
+**Exit gate → M3:** security/privacy review scheduled.
+
+## Milestone 3 — Security/privacy review + operational readiness + owner approval [PROPOSED]
+**Scope:** independent security + privacy review; **[LEGAL]** token-treatment review; incident-response, key-rotation, monitoring runbooks; readiness checklist.
+**Acceptance:** review sign-offs; runbooks complete; owner go/no-go.
+**Exit gate → M4:** explicit written production approval.
+
+## Milestone 4 — Production rollout, one product at a time [PROPOSED]
+**Scope:** separately approved production enablement, per product, behind feature flags, with fiat/non-token fallback where practical. Real token utility only after **[LEGAL]** + XRPL identity audit + budget approval.
+**Hard constraints:** no bulk enablement; one product at a time; emergency pause ready; CAUL AI never modifies a product's prod code/DB/DNS/billing.
+**Acceptance:** per-product production verification + monitoring green.
+
+---
+
+## Cost separation (every milestone)
+- **$0 / local / mock:** M0 fully; M1 fully (dev, mocks); M2 staging with sandbox/mock (no paid token ops).
+- **Potential paid (requires budget approval):** production IdP (Auth0) tier; LLM usage for client-ops/agent features; any production infra beyond current container; legal counsel; any real token/treasury operations. All itemized in `DECISIONS_REQUIRED.md`.
+
+## Boundaries that never change without written owner approval
+No production deploys from CAUL AI; no live wallet/keys; no external accounts/spend; no modifying any product's prod code/DB/DNS/billing/live records/token config; no DB merges; no autonomous spend/publish/outreach; no token custody/signing.

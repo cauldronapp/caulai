@@ -95,5 +95,9 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - **Scheduled Weekly Digest**: `POST /api/cron/weekly-digest` (HMAC cron auth, shared `_require_cron_auth` helper) builds a 7-day governance digest (approvals by status, audit growth, emergency pauses) and stores it as a broadcast `Notification` (kind=`digest`) + a `digest.generated` audit event. **No email sent — generated-and-stored only** to honor the $0-spend / no-external-connectivity guardrail. Scheduled in `.emergent/crons.yml` (Mondays 13:00 UTC).
 - 131 tests, **100% coverage maintained**. Verified live on preview (shared label + pin/star render; digest cron returns 200 and stores notification).
 
+## Ecosystem Integration — Milestone 0 (Discovery) (2026-06-15)
+- Produced 7 ecosystem-integration documents in `/app/docs/` per the Master Prompt: `ECOSYSTEM_INTEGRATION_ARCHITECTURE.md`, `CAUL_UTILITY_SERVICE_SPEC.md`, `CLIENT_OPERATIONS_AND_PRIVACY_SPEC.md`, `PRODUCT_ADAPTER_CONTRACT.md`, `PHASED_IMPLEMENTATION_PLAN.md` (superseded w/ M0–M4 gates), `SECURITY_AND_TEST_PLAN.md`, `DECISIONS_REQUIRED.md`.
+- **No code changed, no deploy, no spend, no secrets, no token ops.** Stopped at the M0→M1 approval gate. M1 (dev-only mocks/schemas/tests) is pre-specified and awaits owner answers to Section A of `DECISIONS_REQUIRED.md`.
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
