@@ -37,7 +37,12 @@
 
 ## G. Usage instrumentation (Stage 1 measurement)
 17. **[DECISION]** Approve a **development-only, $0** implementation of `USAGE_INSTRUMENTATION_SPEC.md` (synthetic data only; no real customer data; no external services; staging/production untouched)?  **[Approve / Hold]**
-18. **[DECISION]** Raw-event retention window (default ≤90 days in dev), pseudonymization method for account/tenant/product refs, baseline-vs-assisted attribution method, and token$/model rate assumptions for `est_cost_usd`.
+18. **[DECISION]** Confirm recommended defaults from `USAGE_INSTRUMENTATION_DECISION_BRIEF.md`:
+    - Retention: `RAW_RETENTION_DAYS = 30`, `AGGREGATE_RETENTION_MONTHS = 24` (roll-up then hard delete).
+    - Pseudonymization: per-(tenant, product) scoped surrogate IDs, no cross-product person linkage, server-side generation only.
+    - Attribution: observational default with labeling rule (observational / quasi-experimental / experimental).
+    - Model cost: configurable three-rate table (input/output/cached) + `source_url` + `effective_date`; provider public pricing as source; **$CAUL price is never a cost input**.
+    - PII: no free-text fields; small-cell suppression `n < 5` for aggregates.
 
 ---
 

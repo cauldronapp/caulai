@@ -107,5 +107,9 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Produced `/app/docs/USAGE_INSTRUMENTATION_SPEC.md`: dev-only, $0 measurement layer to prove internal value before pricing. Covers first 5 workflows, event taxonomy + fields, metric formulas (AI cost/account, support time saved, onboarding completion, renewal follow-up, workflow success), privacy/retention limits (pseudonymous refs, no PII/content, ≤90-day raw retention), synthetic-data test plan, and acceptance criteria.
 - **Spec only — no code, no real data, no external services, no billing/pricing/production changes.** Awaiting owner review before any dev-only implementation. Cross-linked from `MONETIZATION_VALIDATION_PLAN.md` and `DECISIONS_REQUIRED.md` (§G).
 
+## §G usage-instrumentation decision brief — (2026-06-15)
+- Produced `/app/docs/USAGE_INSTRUMENTATION_DECISION_BRIEF.md`: recommended defaults for retention (30d raw / 24mo aggregates + hard-delete flow), per-(tenant,product) scoped pseudonymization with no cross-product linkage, observational attribution with labeling rule, configurable 3-rate model-cost table (input/output/cached) with source_url + effective_date ($CAUL price never a cost input), and PII safeguards (no free-text; what validation can/cannot detect; small-cell suppression n<5). Includes schema/event JSON examples.
+- Updated `DECISIONS_REQUIRED.md` §G with concrete defaults. **Documentation-only — no code until owner explicitly approves implementation.**
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
