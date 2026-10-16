@@ -1,8 +1,30 @@
 # PRODUCTION_READINESS_PLAN.md
 **CAUL AI — production-readiness plan (owner review draft).**
 **Plan only. Nothing executed.** No code, configuration, cron, secret, database, staging, production, or deployment change. Dev and staging remain untouched.
+**OWNER DECISION (2026-10-16):** production stays **frontend-only**; DB-backed features **UNAVAILABLE**; production must **never** use `DEV_/STAGING_DATABASE_URL`; current source + shared cron must **not** be promoted via a secret-triggered redeploy. See §0a.
 
 > Legend: **[EXISTS]** in repo today · **[PROPOSED]** future work (not built) · **[DECISION]** owner choice · **[BLOCKER]** must be resolved before go-live · **[LEGAL/3P]** third-party/account action the owner must take.
+
+---
+
+## 0a. OWNER DECISION OF RECORD (2026-10-16) — production stays frontend-only
+Recorded per the owner's explicit instruction. **Binding until the owner approves otherwise in writing.**
+
+1. **Production remains FRONTEND-ONLY**; database-backed features are **UNAVAILABLE**. The confirmed lack of a supported **$0 / no-new-account** production PostgreSQL option means the **production gate is NOT met** — go-live stays blocked.
+2. **Production must NEVER connect through `DEV_DATABASE_URL` or `STAGING_DATABASE_URL`.** Pointing a production DB URL into the dev/staging variables is explicitly rejected: the app would still run as `APP_ENV=dev` (wrong env semantics) **and** editing that secret would trigger a rebuild from current preview source (see #3).
+3. **The current preview source and the shared cron (`.emergent/crons.yml`, incl. `usage-retention`) must NOT be promoted to production by a secret-triggered redeploy.** A secret change rebuilds from current preview source, which contains the usage code + shared cron, and is **not an approved production release**.
+4. **Full freeze continues:** do not create accounts, incur credits/costs, change secrets, provision a database, run production migrations, or deploy/redeploy. No implementation of any option below.
+
+> Note on live state (unchanged, documented): a prior promotion (run `31bef5ce`, image `sha256:ef70a3cb…`, 2026-10-16T20:36:10Z) already placed the usage routes + `usage-retention` cron into the live image and the backend health/login endpoints 500 (unreachable `localhost` DB). Remediation is deferred and requires a separate, owner-approved release once the freeze lifts — it is NOT performed here.
+
+### Distinct FUTURE choices (owner to pick later — none implemented)
+| Option | What it means | Cost / account | Trade-offs |
+|---|---|---|---|
+| **A. Remain frontend-only (current)** | Keep DB-backed features unavailable; CAUL AI data work stays in dev/staging | **$0, no new account** | Honors constraint; no production app functionality; no incident risk |
+| **B. Evaluate a free external account** | e.g., a managed Postgres free tier (Supabase/Neon/etc.), reachable from prod | **$0 usage but REQUIRES a new third-party account** (breaks "no-new-account") | Enables prod DB at $0; adds an external dependency/account + data-handling review |
+| **C. Consider a paid database** | Managed Postgres instance isolated from dev/staging | **Recurring paid cost + account** | Most robust/predictable; needs budget approval + hard limits |
+
+**All three are gated behind:** adopting the explicit `production` env + dedicated `PROD_DATABASE_URL`/`PROD_ADMIN_DATABASE_URL` (Stage B design), fixing the secret-triggered-redeploy/source-pinning release path (support request §7/§7a pending), and the owner's written approval of a specific option. **Nothing proceeds until then.**
 
 ---
 
