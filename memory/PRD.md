@@ -99,5 +99,9 @@ hash-chained audit (never "immutable"). 6. Separate physical dev/staging DBs + s
 - Produced 7 ecosystem-integration documents in `/app/docs/` per the Master Prompt: `ECOSYSTEM_INTEGRATION_ARCHITECTURE.md`, `CAUL_UTILITY_SERVICE_SPEC.md`, `CLIENT_OPERATIONS_AND_PRIVACY_SPEC.md`, `PRODUCT_ADAPTER_CONTRACT.md`, `PHASED_IMPLEMENTATION_PLAN.md` (superseded w/ M0–M4 gates), `SECURITY_AND_TEST_PLAN.md`, `DECISIONS_REQUIRED.md`.
 - **No code changed, no deploy, no spend, no secrets, no token ops.** Stopped at the M0→M1 approval gate. M1 (dev-only mocks/schemas/tests) is pre-specified and awaits owner answers to Section A of `DECISIONS_REQUIRED.md`.
 
+## Monetization & unit-economics plan — Milestone 0 (2026-06-15)
+- Produced 4 owner-review strategy docs in `/app/docs/`: `MONETIZATION_STRATEGY.md`, `PRICING_MODEL_DRAFT.md`, `COST_AND_UNIT_ECONOMICS_MODEL.md`, `MONETIZATION_VALIDATION_PLAN.md`.
+- Internal-first → validated external SaaS; fiat billing default; $CAUL optional/counsel-reviewed only; no return/appreciation claims. **All prices are hypotheses.** No billing/payments/live-pricing/production changes. Validation precedes any build.
+
 ## Next tasks
 Phase 1A CLOSED/ACCEPTED (100% coverage). Production hardening done. Auth0 identity (Phase 1B) is dossier-ready but **NOT started** — needs explicit written approval + staging Auth0 values (see dossier §7). Deal Flow OS integration resumes after CAUL AI is further along. Do NOT begin any external connection (Auth0, live connectors, off-box export, Deal Flow OS) without separate written approval.
