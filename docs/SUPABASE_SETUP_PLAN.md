@@ -11,15 +11,12 @@
 - **[CANNOT VERIFY]** The exact Availability Zone (`us-west-2a/b/c`) is not determinable from available tooling — an Emergent support ticket is needed if you want the AZ.
 - **[RECOMMEND]** Create your Supabase projects in **`West US (Oregon) / us-west-2`** to co-locate the DB with the app and minimize app↔DB latency. Supabase region is **fixed per project at creation** — choose deliberately.
 
-## 2. Staging + production project arrangement & monthly cost (nothing created)
-- **[FACT — Supabase billing, latest]** Billing is **organization-based**: the **Pro plan is $25/mo** per organization and **includes $10/mo of compute credit**. **Each project runs on its own dedicated compute instance**, billed hourly; the $10 credit applies to total compute.
-- **[RECOMMEND] Two separate projects in one Pro org** — a **staging** project and a **production** project — for true data isolation (never share a DB across envs). This matches the app's dev/staging/prod separation model.
-- **Estimated monthly cost [FACT-based estimate]:**
-  - Both projects on **Micro** (~$10/mo each): **$25 (Pro) + $10 + $10 − $10 credit = ~$35/mo.**
-  - Cost-saver: **pause the staging project** when idle (paused projects incur no compute) → effectively **~$25/mo** while only production runs.
-  - Compute can scale later (Small ~$15, Medium ~$60, etc.); Micro is appropriate for a low-volume pilot.
-  - **IPv4 note:** the free **Session pooler is IPv4** (see §3), so you should **not** need the dedicated **IPv4 add-on (~$4/mo/project)**. Only budget it if you must use a *direct* (non-pooler) connection over IPv4.
-- **[DECISION]** One project vs two (isolation vs cost); compute size; whether to pause staging between tests.
+## 2. This step: ONE staging project only (no production project yet)
+- **[FACT — Supabase billing, latest]** Org-based billing: **Pro = $25/mo** per org, includes **$10/mo compute credit**; each project has its own dedicated compute, billed hourly.
+- **Your approved scope = one staging project now.** Expected total: **$25 (Pro) + ~$10 (one Micro) − $10 (credit) = ~$25/mo** for a single Micro staging project. (A production project is NOT created now; adding it later on Micro would add ~$10/mo → ~$35/mo for both.)
+- **⚠️ Pause correction [FACT]:** **Pro-plan projects CANNOT be manually paused.** Only Free-plan projects can pause (manual or inactivity). To stop a staging project's compute you would have to **move it to a Free-plan org**; while it stays in the Pro org it keeps accruing ~$10/mo compute. When a project is paused (Free org), **compute charges stop but data is retained**; the **$25 Pro base fee continues regardless** (covers the org, active or not). Disk (8 GB incl. on Pro) data persists.
+- **IPv4 note:** the free **Session pooler is IPv4** (see §3), so you should **not** need the dedicated **IPv4 add-on (~$4/mo/project)**.
+- **I cannot create the Supabase project** — that requires your Supabase dashboard login. Create it yourself: New project → region **West US (Oregon) / us-west-2** → Pro org. Then put connection strings into the Emergent **Secrets** panel (never chat/docs).
 
 ## 3. Exact PostgreSQL connection method the deployed app requires
 **App shape [FACT]:** FastAPI + **synchronous SQLAlchemy** `create_engine(... pool_pre_ping=True)` (`app/database.py`), psycopg3 driver (`postgresql+psycopg://`), long-lived uvicorn pod (not serverless). It uses SQLAlchemy's own connection pool and relies on session semantics (transactions, `SELECT current_database()` guard).
@@ -69,3 +66,13 @@ All of this is **[PROPOSED]** per `STAGE_B_PRODUCTION_ENV_DESIGN.md`; **none is 
 6. **Release gating** — authorize sending the §7a support request to get agent-driven/secret-change promotions behind a manual approval gate before any go-live.
 
 **Status:** read-only plan delivered. No Supabase connection, no projects, no code/config/secret/DB/migration/deploy change. Production freeze intact.
+
+---
+
+## BLOCKER on the Stage B build — cannot confirm an isolated Emergent app
+Your approval of the Stage B dev-only build was conditioned on "after you confirm it is in an isolated Emergent app." **I cannot confirm that, so I did NOT build.** Reasons [FACT]:
+- This `/app` pod **is** the production-bound source for `caul-impl-gate`; it is **not** isolated.
+- Agent-driven (`agentic`) promotions auto-ship this source to production with **no approval gate** (confirmed). So any code written here could be promoted to production — exactly the freeze risk.
+- **I cannot create a separate Emergent app** from inside this pod; only you can create a new Emergent app/job from the platform UI.
+
+**Safe path to unblock:** you create a **new, separate Emergent app** (its own isolated pod/deploy/secrets/DB, $0 in preview). In THAT app, the Stage B build + staging-Supabase synthetic-data tests can proceed with zero risk to `caul-impl-gate`. Until then, Stage B stays unbuilt here.
