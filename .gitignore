@@ -21,3 +21,9 @@ backups/
 .pytest_cache/
 test_reports/
 frontend/node_modules/.cache/default-development/0.pack
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
